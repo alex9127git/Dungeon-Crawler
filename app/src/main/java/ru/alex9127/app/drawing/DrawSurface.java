@@ -30,21 +30,41 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     protected void onSizeChanged(int w, int h, int oldW, int oldH) {
         super.onSizeChanged(w, h, oldW, oldH);
-        xStart = getTerrainDrawData()[0];
-        yStart = getTerrainDrawData()[1];
-        yBlocks = getTerrainDrawData()[2];
+        TerrainData td = TerrainData.get(this);
+        xStart = td.getXStartPos();
+        yStart = td.getYStartPos();
+        yBlocks = td.getYBlocks();
         generateImages(getResources(), getWidth(), getHeight(), yStart, yBlocks);
     }
 
-    public int[] getTerrainDrawData() {
-        /*
-        [0] = start X pos
-        [1] = start Y pos
-        [2] = number of available blocks by Y axis
-        */
-        return new int[] {getWidth() / 18,
-                (getHeight() / 2) % ((getWidth() / 9) == 0 ? 1 : (getWidth() / 9)),
-                getHeight() / ((getWidth() / 9) == 0 ? 1 : (getWidth() / 9))};
+    static class TerrainData {
+        private final int xStartPos;
+        private final int yStartPos;
+        private final int yBlocks;
+
+        private TerrainData(int xStartPos, int yStartPos, int yBlocks) {
+            this.xStartPos = xStartPos;
+            this.yStartPos = yStartPos;
+            this.yBlocks = yBlocks;
+        }
+
+        public int getXStartPos() {
+            return xStartPos;
+        }
+
+        public int getYStartPos() {
+            return yStartPos;
+        }
+
+        public int getYBlocks() {
+            return yBlocks;
+        }
+
+        static TerrainData get(DrawSurface s) {
+            return new TerrainData(s.getWidth() / 18,
+                    (s.getHeight() / 2) % ((s.getWidth() / 9) == 0 ? 1 : (s.getWidth() / 9)),
+                    s.getHeight() / ((s.getWidth() / 9) == 0 ? 1 : (s.getWidth() / 9)));
+        }
     }
 
     public void handleClick(int x, int y) {
@@ -508,14 +528,11 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
 Надо поработать над БД. Запрос данных должен происходить в отдельном потоке. Вывод в виде текста -- скучно. Использовать глобальную переменную -- решение не из лучших.
 Метод checkMove в Unit'е:
 Проверки и возврат строк -- не лучшее решение. Подумайте над enum'ами.
-Подумайте над тем, чтобы использовать класс Random.
 Использование статических полей в Pathfinder'е -- не самое лучшее решение. Подумайте, как можно заменить использование глобальной переменной info на локальную версию.
 Логика InventoryItem на строках тоже меня настораживает.
 
-При генерации врагов много одинакового кода. Может как-то можно его обобщить?
 Не надо привязываться строго к уровню 6.
 Может стоит отдельно решить вопрос придумывания точки спавна (можно вообще делегировать этот вопрос Terrain'у, т.к. он может решить эту задачу) и силы врага, а уже потом создавать его?
-В getTerrainDrawData лучше возвращать специально созданный класс, а не массив.
 В рисовалках может стоит избавиться от case'ов заменив их на мапы или массивы (Вы же уберёте ещё и строки?)
 Почему в getCorrespondingImage что-то рисуется?
 В ImageManager'е я бы подумал от избавления от статических полей. Можно попробовать сделать это без них.

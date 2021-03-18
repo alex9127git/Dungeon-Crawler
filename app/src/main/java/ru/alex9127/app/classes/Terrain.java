@@ -2,6 +2,8 @@ package ru.alex9127.app.classes;
 
 import androidx.annotation.NonNull;
 
+import java.util.Random;
+
 import ru.alex9127.app.interfaces.TerrainLike;
 
 public class Terrain implements TerrainLike {
@@ -201,7 +203,7 @@ public class Terrain implements TerrainLike {
     }
 
     private int generateRandom(int start, int variation) {
-        return (int) (Math.random() * variation) + start;
+        return new Random().nextInt(variation) + start;
     }
 
     private void createWalls() {

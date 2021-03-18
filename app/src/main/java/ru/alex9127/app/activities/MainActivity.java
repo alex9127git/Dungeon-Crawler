@@ -2,18 +2,13 @@ package ru.alex9127.app.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.Activity;
 import android.content.*;
-import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
-import android.util.Log;
 import android.view.View;
 import android.widget.*;
 
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
 
 import ru.alex9127.app.R;
 import ru.alex9127.app.database.LeaderBoardDataBase;

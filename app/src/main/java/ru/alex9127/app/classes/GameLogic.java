@@ -2,6 +2,7 @@ package ru.alex9127.app.classes;
 
 import android.app.Activity;
 import android.content.Intent;
+import java.util.Random;
 
 import java.util.*;
 
@@ -33,24 +34,18 @@ public class GameLogic {
                 if (terrain.getBlockWalkable(enemyX, enemyY)) {
                     if (level % 6 != 0) {
                         if (level <= 6) {
-                            enemies.add(new Enemy("SLIME",
-                                    (int) (20 + (int) (Math.random() * 10) * (1 + level * 0.5)),
-                                    (int) (4 + (int) (Math.random() * 2) * (1 + level * 0.5)),
-                                    (int) (2 + (int) (Math.random() * 1) * (1 + level * 0.5)), 0,
-                                    enemyX, enemyY, (30 + (int) (Math.random() * 20)) * level));
+                            enemies.add(EnemyGenerator.getEnemy("SLIME", level, 20, 10,
+                                    4, 2, 2, 1, 30,
+                                    20, enemyX, enemyY));
                         } else {
-                            enemies.add(new Enemy("ZOMBIE",
-                                    (int) (50 + (int) (Math.random() * 30) * (1 + level * 0.5)),
-                                    (int) (10 + (int) (Math.random() * 5) * (1 + level * 0.5)),
-                                    (int) (5 + (int) (Math.random() * 3) * (1 + level * 0.5)), 0,
-                                    enemyX, enemyY, (70 + (int) (Math.random() * 50)) * level));
+                            enemies.add(EnemyGenerator.getEnemy("ZOMBIE", level, 50, 30,
+                                    10, 5, 5, 3, 70,
+                                    50, enemyX, enemyY));
                         }
                     } else {
-                        enemies.add(new Enemy("KING SLIME",
-                                (int) (1000 + (int) (Math.random() * 500) * (1 + level * 0.5)),
-                                (int) (20 + (int) (Math.random() * 10) * (1 + level * 0.5)),
-                                (int) (0 + (int) (Math.random() * 0) * (1 + level * 0.5)), 0,
-                                enemyX, enemyY, (1000 + (int) (Math.random() * 500)) * level));
+                        enemies.add(EnemyGenerator.getEnemy("KING SLIME", level, 1000, 500,
+                                20, 10, 0, 0, 1000,
+                                500, enemyX, enemyY));
                     }
                     enemyPlaced = true;
                 }
