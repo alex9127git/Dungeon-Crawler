@@ -57,6 +57,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void quit(View v) {
+        class SaveData extends AsyncTask<Void, Integer, Void> {
+            protected Void doInBackground(Void... args) {
+                //databaseConnector.insert()
+                return null;
+            }
+        }
+        //new SaveData().execute();
         this.finish();
         System.exit(0);
     }
@@ -64,5 +71,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
     }
 }
