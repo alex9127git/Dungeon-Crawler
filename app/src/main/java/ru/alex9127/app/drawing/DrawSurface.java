@@ -89,7 +89,12 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                 if (buttonAttack.getBoundaryRect().contains(x, y)) {
                     for (Enemy e : game.enemies) {
                         if (Pathfinder.distance(game.unit.getX(), game.unit.getY(), e.getX(), e.getY()) <= 2.0) {
-                            e.changeHp(-1 * (game.unit.getAttackPower() - e.getDefensePower()));
+                            int atk = game.unit.getAttackPower() - e.getDefensePower();
+                            e.changeHp(-atk);
+                            text.rewind();
+                            TextImage t = text;
+                            t.setText(Integer.toString(atk));
+                            drawer.textImages.add(t);
                         }
                     }
                     game.enemyAI();
@@ -276,12 +281,13 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                  y <= game.unit.getY() + (int) Math.floor(yBlocks / 2.0); y++) {
                 for (int x = game.unit.getX() - 4; x <= game.unit.getX() + 4; x++) {
                     game.terrain.revealBlock(x, y);
-                    Image img = getCorrespondingImage(canvas, drawX, drawY, x, y);
-                    if (img != null) {
-                        if (img instanceof DefaultImage) {
-                            ((DefaultImage) img).draw(canvas, drawX, drawY);
+                    Images images = getCorrespondingImages(x, y);
+                    if (images != null) {
+                        ((DefaultImage) images.getBase()).draw(canvas, drawX, drawY);
+                        if (images.getConfig() instanceof DefaultImage) {
+                            ((DefaultImage) images.getConfig()).draw(canvas, drawX, drawY);
                         } else {
-                            ((AnimatedImage) img).draw(canvas, drawX, drawY);
+                            ((AnimatedImage) images.getConfig()).draw(canvas, drawX, drawY);
                         }
                     }
                     drawAndUpdateEnemies(canvas, drawX, drawY, y, x);
@@ -363,48 +369,66 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
             return false;
         }
 
-        private Image getCorrespondingImage(Canvas canvas, int drawX, int drawY,
-                                                   int x, int y) {
-            Image img = null;
+        class Images {
+            private final Image base;
+            private final Image config;
+
+            public Images(Image base, Image config) {
+                this.base = base;
+                this.config = config;
+            }
+
+            public Image getBase() {
+                return base;
+            }
+
+            public Image getConfig() {
+                return config;
+            }
+        }
+
+        private Images getCorrespondingImages(int x, int y) {
+            Image base = null;
+            Image config = null;
             boolean walkable = game.terrain.getBlockWalkable(x, y);
             switch (game.terrain.getBlockMaterial(x, y)) {
                 case "stone":
                     if (walkable) {
-                        stoneFloor.draw(canvas, drawX, drawY);
+                        base = stoneFloor;
                     } else {
-                        stoneWall.draw(canvas, drawX, drawY);
+                        base = stoneWall;
                     }
                     break;
                 case "wooden":
                     if (walkable) {
-                        woodenFloor.draw(canvas, drawX, drawY);
+                        base = woodenFloor;
                     } else {
-                        woodenWall.draw(canvas, drawX, drawY);
+                        base = woodenWall;
                     }
                     break;
             }
             switch (game.terrain.getBlockConfig(x, y)) {
                 case "none":
-                    img = null;
+                    config = null;
                     break;
                 case "chest":
-                    img = chest;
+                    config = chest;
                     break;
                 case "spawn":
-                    img = spawn;
+                    config = spawn;
                     break;
                 case "portal":
-                    img = portal;
+                    config = portal;
                     break;
                 case "spikes":
                     if (game.terrain instanceof Terrain && ((Terrain) game.terrain).getTrap(x, y).isNotRevealed()) {
-                        img = null;
+                        config = null;
                     } else {
-                        img = spikesStatic;
+                        config = spikesStatic;
                     }
                     break;
             }
-            return img;
+            return new Images(base, config);
         }
 
         void drawButtons(Canvas canvas) {
@@ -517,8 +541,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
 }
 
 
-// TODO: сделать серверную базу данных
-// TODO: сделать туман войны
+// TODO: сделать базу данных
 // TODO: сделать мини игры, связанные с атакой или защитой
 // TODO: сделать раунд игры конечной
 /* TODO:
@@ -532,7 +555,6 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
 Не надо привязываться строго к уровню 6.
 Может стоит отдельно решить вопрос придумывания точки спавна (можно вообще делегировать этот вопрос Terrain'у, т.к. он может решить эту задачу) и силы врага, а уже потом создавать его?
 В рисовалках может стоит избавиться от case'ов заменив их на мапы или массивы (Вы же уберёте ещё и строки?)
-Почему в getCorrespondingImage что-то рисуется?
 В ImageManager'е я бы подумал от избавления от статических полей. Можно попробовать сделать это без них.
 Может логику работы с кнопками как-то загнать в общий цикл обработки?
  */
