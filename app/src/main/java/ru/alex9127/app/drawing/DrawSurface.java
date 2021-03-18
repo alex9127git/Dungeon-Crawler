@@ -179,11 +179,11 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         private final Paint darkBrown = new Paint();
         private final Paint lightBrown = new Paint();
         private final Paint gold = new Paint();
+        private final Paint paleYellow = new Paint();
         private final Paint green = new Paint();
         private final Paint blue = new Paint();
         private final Paint purple = new Paint();
         private final Paint white = new Paint();
-        private final Paint black = new Paint();
         private final ArrayList<TextImage> textImages = new ArrayList<>();
         private long currentTime = System.currentTimeMillis();
         private long runTime = 0;
@@ -191,13 +191,13 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
 
         public DrawThread(SurfaceHolder surfaceHolder) {
             this.surfaceHolder = surfaceHolder;
-            black.setColor(getResources().getColor(R.color.black));
             darkGray.setColor(getResources().getColor(R.color.darkGray));
             lightGray.setColor(getResources().getColor(R.color.lightGray));
             darkBrown.setColor(getResources().getColor(R.color.darkBrown));
             lightBrown.setColor(getResources().getColor(R.color.lightBrown));
             red.setColor(getResources().getColor(R.color.red));
             gold.setColor(getResources().getColor(R.color.gold));
+            paleYellow.setColor(getResources().getColor(R.color.paleYellow));
             green.setColor(getResources().getColor(R.color.green));
             blue.setColor(getResources().getColor(R.color.blue));
             purple.setColor(getResources().getColor(R.color.purple));
@@ -248,8 +248,6 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                     game.unit.changeMana(1);
             }
         }
-
-
 
         private void textPopupsDraw(Canvas canvas) {
             ArrayList<TextImage> t = new ArrayList<>();
@@ -424,7 +422,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
             if (miniMapOpened) {
                 Paint p = new Paint();
                 p.setStyle(Paint.Style.FILL);
-                p.setColor(Color.argb(255, 255, 233, 128));
+                p.setColor(getResources().getColor(R.color.paleYellow));
                 canvas.drawRect((float) (unitOfLength * 0.5),
                         (float) (yStart + unitOfLength * (yBlocks / 2.0 - 4)),
                         (float) (unitOfLength * 8.5),
@@ -506,7 +504,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                 }
                 return p;
             } else {
-                return black;
+                return paleYellow;
             }
         }
 
