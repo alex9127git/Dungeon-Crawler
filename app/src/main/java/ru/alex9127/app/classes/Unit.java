@@ -56,10 +56,10 @@ public class Unit extends Entity {
         this.inventory.remove(item);
     }
 
-    public String checkMove(int dx, int dy, TerrainLike terrain, int enemiesRemaining) {
+    public String checkMove(int dx, int dy, TerrainLike terrain) {
         if (terrain.getBlockWalkable(this.getX() + dx, this.getY() + dy)) {
-            move(dx, dy);
             String config = terrain.getBlockConfig(this.getX() + dx, this.getY() + dy);
+            move(dx, dy);
             if (config.equals("chest")) {
                 int r = (int) (Math.random() * 2);
                 if (r == 0) {
@@ -71,7 +71,6 @@ public class Unit extends Entity {
                 }
             }
             if (config.equals("spikes") && terrain instanceof Terrain) {
-                move(dx, dy);
                 ((Terrain) terrain).revealTrap(getX(), getY());
                 changeHp(-10);
                 return "moved onto trap";

@@ -49,10 +49,6 @@ public class BossArena implements TerrainLike {
         }
     }
 
-    public Block getBlock(int x, int y) {
-        return terrain[y][x];
-    }
-
     public boolean getBlockWalkable(int x, int y) {
         return terrain[y][x].isWalkable();
     }
@@ -65,6 +61,10 @@ public class BossArena implements TerrainLike {
         return terrain[y][x].getConfig();
     }
 
+    public boolean isBlockRevealed(int x, int y) {
+        return terrain[y][x].isShown();
+    }
+
     public void setBlockWalkable(int x, int y, boolean isWalkable) {
         terrain[y][x].setWalkable(isWalkable);
     }
@@ -75,6 +75,10 @@ public class BossArena implements TerrainLike {
 
     public void setBlockConfig(int x, int y, String config) {
         terrain[y][x].setConfig(config);
+    }
+
+    public void revealBlock(int x, int y) {
+        terrain[y][x].reveal();
     }
 
     public int getSize() {

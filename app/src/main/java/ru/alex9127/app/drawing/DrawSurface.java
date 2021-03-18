@@ -105,16 +105,16 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         if (!drawer.castingMagic) {
             if (!drawer.paused) {
                 if (buttonDown.getBoundaryRect().contains(x, y)) {
-                    s = unit.checkMove(0, 1, terrain, enemies.size());
+                    s = unit.checkMove(0, 1, terrain);
                 }
                 if (buttonUp.getBoundaryRect().contains(x, y)) {
-                    s = unit.checkMove(0, -1, terrain, enemies.size());
+                    s = unit.checkMove(0, -1, terrain);
                 }
                 if (buttonLeft.getBoundaryRect().contains(x, y)) {
-                    s = unit.checkMove(-1, 0, terrain, enemies.size());
+                    s = unit.checkMove(-1, 0, terrain);
                 }
                 if (buttonRight.getBoundaryRect().contains(x, y)) {
-                    s = unit.checkMove(1, 0, terrain, enemies.size());
+                    s = unit.checkMove(1, 0, terrain);
                 }
                 if (buttonMiniMap.getBoundaryRect().contains(x, y)) {
                     drawer.miniMapOpened = !drawer.miniMapOpened;
@@ -216,6 +216,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         private final Paint blue = new Paint();
         private final Paint purple = new Paint();
         private final Paint white = new Paint();
+        private final Paint black = new Paint();
         private final ArrayList<TextImage> textImages = new ArrayList<>();
         private long currentTime = System.currentTimeMillis();
         private long runTime = 0;
@@ -223,6 +224,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
 
         public DrawThread(SurfaceHolder surfaceHolder) {
             this.surfaceHolder = surfaceHolder;
+            black.setColor(getResources().getColor(R.color.black));
             darkGray.setColor(getResources().getColor(R.color.darkGray));
             lightGray.setColor(getResources().getColor(R.color.lightGray));
             darkBrown.setColor(getResources().getColor(R.color.darkBrown));
@@ -313,7 +315,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         private void checkNextLevel() {
-            if (unit.getX() == terrain.getPortalPoint().getX() && unit.getY() == terrain.getPortalPoint().getY()) {
+            if (unit.getX() == terrain.getPortalPoint().getX() && unit.getY() == terrain.getPortalPoint().getY() && enemies.isEmpty()) {
                 level++;
                 if (level % 6 == 0) {
                     terrain = new BossArena(128);
@@ -332,6 +334,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
             for (int y = unit.getY() - (int) Math.floor(yBlocks / 2.0);
                  y <= unit.getY() + (int) Math.floor(yBlocks / 2.0); y++) {
                 for (int x = unit.getX() - 4; x <= unit.getX() + 4; x++) {
+                    terrain.revealBlock(x, y);
                     Image img = getCorrespondingImage(canvas, drawX, drawY, x, y);
                     if (img != null) {
                         if (img instanceof DefaultImage) {
@@ -453,7 +456,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                     img = portal;
                     break;
                 case "spikes":
-                    if (terrain instanceof Terrain && !((Terrain) terrain).getTrap(x, y).getRevealed()) {
+                    if (terrain instanceof Terrain && ((Terrain) terrain).getTrap(x, y).isNotRevealed()) {
                         img = null;
                     } else {
                         img = spikesStatic;
@@ -506,58 +509,62 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         private Paint chooseCorrespondingColor(int x, int y) {
             Paint p = null;
             Paint floor = null;
-            try {
-                boolean walkable = terrain.getBlockWalkable(x, y);
-                switch (terrain.getBlockMaterial(x, y)) {
-                    case "stone":
-                        if (walkable) {
-                            floor = lightGray;
-                        } else {
-                            floor = darkGray;
-                        }
-                        break;
-                    case "wooden":
-                        if (walkable) {
-                            floor = lightBrown;
-                        } else {
-                            floor = darkBrown;
-                        }
-                        break;
-                }
-                switch (terrain.getBlockConfig(x, y)) {
-                    case "none":
-                    case "spawn":
-                        p = floor;
-                        break;
-                    case "chest":
-                        p = gold;
-                        break;
-                    case "portal":
-                        p = purple;
-                        break;
-                    case "spikes":
-                        if (terrain instanceof Terrain && !((Terrain) terrain).getTrap(x, y).getRevealed()) {
+            if (terrain.isBlockRevealed(x, y)) {
+                try {
+                    boolean walkable = terrain.getBlockWalkable(x, y);
+                    switch (terrain.getBlockMaterial(x, y)) {
+                        case "stone":
+                            if (walkable) {
+                                floor = lightGray;
+                            } else {
+                                floor = darkGray;
+                            }
+                            break;
+                        case "wooden":
+                            if (walkable) {
+                                floor = lightBrown;
+                            } else {
+                                floor = darkBrown;
+                            }
+                            break;
+                    }
+                    switch (terrain.getBlockConfig(x, y)) {
+                        case "none":
+                        case "spawn":
                             p = floor;
-                        } else {
-                            p = white;
+                            break;
+                        case "chest":
+                            p = gold;
+                            break;
+                        case "portal":
+                            p = purple;
+                            break;
+                        case "spikes":
+                            if (terrain instanceof Terrain && ((Terrain) terrain).getTrap(x, y).isNotRevealed()) {
+                                p = floor;
+                            } else {
+                                p = white;
+                            }
+                            break;
+                    }
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    p = darkGray;
+                }
+                if (floor != null) {
+                    if (unit.getX() == x && unit.getY() == y) {
+                        p = green;
+                    }
+                    for (Enemy e : enemies) {
+                        if (x == e.getX() && y == e.getY()) {
+                            p = red;
+                            break;
                         }
-                        break;
-                }
-            } catch (ArrayIndexOutOfBoundsException e) {
-                p = darkGray;
-            }
-            if (floor != null) {
-                if (unit.getX() == x && unit.getY() == y) {
-                    p = green;
-                }
-                for (Enemy e : enemies) {
-                    if (x == e.getX() && y == e.getY()) {
-                        p = red;
-                        break;
                     }
                 }
+                return p;
+            } else {
+                return black;
             }
-            return p;
         }
 
         private void drawBar(Canvas canvas, Rect rect, Paint paint1, Paint paint2, double percentage) {
@@ -583,7 +590,6 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
 В generatePaths почему вложенный уикл до rooms[0].length-1, хотя бежите Вы по roomsList?
 Зачем Вам в generatePaths два набора циклов? Вы же дублируете проходы для первых комнат.
 fillRow/fillColumn содержат логику со строками, от которой, я надеюсь, Вы избавитесь.
-Кстати, к вопросу хранения информации в Block. Может вместо enum'ов хранить набор флагов (пол/не пол; каменный/деревянный)? Также можно хранить Chest в виде поля. Т.е. Chest -- это не тип ячейки, а её опционально содержимое.
 Использование статических полей в Pathfinder'е -- не самое лучшее решение. Подумайте, как можно заменить использование глобальной переменной info на локальную версию.
 Логика InventoryItem на строках тоже меня настораживает.
 
@@ -596,11 +602,4 @@ fillRow/fillColumn содержат логику со строками, от к�
 Почему в getCorrespondingImage что-то рисуется?
 В ImageManager'е я бы подумал от избавления от статических полей. Можно попробовать сделать это без них.
 Может логику работы с кнопками как-то загнать в общий цикл обработки?
-
-Думаю, пока что хватит. Вам ещё надо сделать что-то с БД. Придумайте что-то более интересное, чем просто таблицу рекордов.
-Если я правильно понял, то сейчас у Вас игра -- набор случайных локаций. Можете подумать и сделать локации не случайными.
-Т.е. в процессе движения Вы накапливаете комнаты, чтобы в них можно было потом возвращаться (это актуально, если у Вас будет несколько выходов).
-Конечно, в этом случае Ваш мир будет ограничен. Цель же будет заключаться в том, что надо что-то найти и это что-то будет находиться в одной из последних комнат.
-Можно при этом добавить каких-то глобальных злодеев, которые также ходят между комнатами и могут наткнуться на героя. Но это как вариант.
-Воспринимайте то, что я написал, как советы/рекомендации.
  */

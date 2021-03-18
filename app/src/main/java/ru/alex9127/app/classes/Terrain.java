@@ -61,8 +61,8 @@ public class Terrain implements TerrainLike {
             isRevealed = false;
         }
 
-        public boolean getRevealed() {
-            return isRevealed;
+        public boolean isNotRevealed() {
+            return !isRevealed;
         }
     }
 
@@ -98,7 +98,7 @@ public class Terrain implements TerrainLike {
             spawnY = generateRandom(0, 128);
             if (getBlockWalkable(spawnX, spawnY)) spawnPlaced = true;
         } while (!spawnPlaced);
-        setBlockConfig(spawnX, spawnY, "spawn");;
+        setBlockConfig(spawnX, spawnY, "spawn");
         this.spawnX = spawnX;
         this.spawnY = spawnY;
     }
@@ -225,10 +225,6 @@ public class Terrain implements TerrainLike {
         return new Point(portalX, portalY);
     }
 
-    public Block getBlock(int x, int y) {
-        return terrain[y][x];
-    }
-
     public boolean getBlockWalkable(int x, int y) {
         return terrain[y][x].isWalkable();
     }
@@ -241,6 +237,10 @@ public class Terrain implements TerrainLike {
         return terrain[y][x].getConfig();
     }
 
+    public boolean isBlockRevealed(int x, int y) {
+        return terrain[y][x].isShown();
+    }
+
     public void setBlockWalkable(int x, int y, boolean isWalkable) {
         terrain[y][x].setWalkable(isWalkable);
     }
@@ -251,6 +251,10 @@ public class Terrain implements TerrainLike {
 
     public void setBlockConfig(int x, int y, String config) {
         terrain[y][x].setConfig(config);
+    }
+
+    public void revealBlock(int x, int y) {
+        terrain[y][x].reveal();
     }
 
     @NonNull

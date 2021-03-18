@@ -10,6 +10,7 @@ public class Block implements Locatable {
     private boolean isWalkable;
     private String material;
     private String config;
+    private boolean isShown;
 
     public Block(int x, int y, boolean isWalkable, String material, String config) {
         setX(x);
@@ -17,6 +18,7 @@ public class Block implements Locatable {
         this.isWalkable = isWalkable;
         this.material = material;
         this.config = config;
+        this.isShown = false;
     }
 
     @Override
@@ -41,6 +43,14 @@ public class Block implements Locatable {
 
     public boolean isWalkable() {
         return isWalkable;
+    }
+
+    public void reveal() {
+        isShown = true;
+    }
+
+    public boolean isShown() {
+        return isShown;
     }
 
     @NonNull
