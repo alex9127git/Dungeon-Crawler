@@ -58,7 +58,7 @@ public class Pathfinder {
         int[][] info = new int[terrain.getSize()][terrain.getSize()];
         for (int y = 0; y < info.length; y++) {
             for (int x = 0; x < info[0].length; x++) {
-                info[y][x] = terrain.getBlock(x, y).getType().endsWith("floor") ? -1 : -100;
+                info[y][x] = terrain.getBlockWalkable(x, y) ? -1 : -100;
                 if (x == start.getX() && y == start.getY()) {
                     info[y][x] = 0;
                 }

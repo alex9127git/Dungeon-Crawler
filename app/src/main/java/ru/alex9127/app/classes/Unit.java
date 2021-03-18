@@ -57,25 +57,26 @@ public class Unit extends Entity {
     }
 
     public String checkMove(int dx, int dy, TerrainLike terrain, int enemiesRemaining) {
-        String blockState = terrain.getBlock(this.getX() + dx, this.getY() + dy).getType();
-        if (blockState.endsWith("floor") || blockState.equals("spawn") || (blockState.equals("portal") && enemiesRemaining == 0)) {
+        if (terrain.getBlockWalkable(this.getX() + dx, this.getY() + dy)) {
             move(dx, dy);
-            return "moved";
-        } else if (blockState.equals("chest")) {
-            move(dx, dy);
-            int r = (int) (Math.random() * 2);
-            if (r == 0) {
-                upgradeAtk((int) (3 + (int) (Math.random() * 3) * (1 + (level * 0.2))));
-                return "atk";
-            } else if (r == 1) {
-                upgradeDef((int) (1 + (int) (Math.random() * 3) * (1 + (level * 0.2))));
-                return "def";
+            String config = terrain.getBlockConfig(this.getX() + dx, this.getY() + dy);
+            if (config.equals("chest")) {
+                int r = (int) (Math.random() * 2);
+                if (r == 0) {
+                    upgradeAtk((int) (3 + (int) (Math.random() * 3) * (1 + (level * 0.2))));
+                    return "atk";
+                } else if (r == 1) {
+                    upgradeDef((int) (1 + (int) (Math.random() * 3) * (1 + (level * 0.2))));
+                    return "def";
+                }
             }
-        } else if (blockState.equals("spikes") && terrain instanceof Terrain) {
-            move(dx, dy);
-            ((Terrain) terrain).revealTrap(getX(), getY());
-            changeHp(-10);
-            return "moved onto trap";
+            if (config.equals("spikes") && terrain instanceof Terrain) {
+                move(dx, dy);
+                ((Terrain) terrain).revealTrap(getX(), getY());
+                changeHp(-10);
+                return "moved onto trap";
+            }
+            return "moved";
         }
         return "notMoved";
     }

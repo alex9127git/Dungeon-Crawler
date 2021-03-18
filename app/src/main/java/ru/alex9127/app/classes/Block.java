@@ -7,12 +7,16 @@ import ru.alex9127.app.interfaces.Locatable;
 public class Block implements Locatable {
     private int x;
     private int y;
-    private final String type;
+    private boolean isWalkable;
+    private String material;
+    private String config;
 
-    public Block(int x, int y, String type) {
+    public Block(int x, int y, boolean isWalkable, String material, String config) {
         setX(x);
         setY(y);
-        this.type = type;
+        this.isWalkable = isWalkable;
+        this.material = material;
+        this.config = config;
     }
 
     @Override
@@ -35,14 +39,29 @@ public class Block implements Locatable {
         return y;
     }
 
-    @NonNull
-    public String getType() {
-        return type;
+    public boolean isWalkable() {
+        return isWalkable;
     }
 
     @NonNull
-    @Override
-    public String toString() {
-        return super.toString();
+    public String getMaterial() {
+        return material;
+    }
+
+    @NonNull
+    public String getConfig() {
+        return config;
+    }
+
+    public void setWalkable(boolean walkable) {
+        isWalkable = walkable;
+    }
+
+    public void setMaterial(String material) {
+        this.material = material;
+    }
+
+    public void setConfig(String config) {
+        this.config = config;
     }
 }

@@ -42,7 +42,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
             do {
                 int enemyX = (int) (Math.random() * 128);
                 int enemyY = (int) (Math.random() * 128);
-                if (terrain.getBlock(enemyX, enemyY).getType().endsWith("floor")) {
+                if (terrain.getBlockWalkable(enemyX, enemyY)) {
                     if (level % 6 != 0) {
                         if (level <= 6) {
                             enemies.add(new Enemy("SLIME",
@@ -140,8 +140,8 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                 if (s.startsWith("moved")) {
                     enemyAI();
                 }
-                if (terrain.getBlock(unit.getX(), unit.getY()).getType().equals("chest")) {
-                    terrain.setBlock(unit.getX(), unit.getY(), "stone floor");
+                if (terrain.getBlockConfig(unit.getX(), unit.getY()).equals("chest")) {
+                    terrain.setBlockConfig(unit.getX(), unit.getY(), "none");
                     String str = "";
                     if (s.equals("atk")) {
                         str = "Found better weapon";
@@ -333,10 +333,12 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                  y <= unit.getY() + (int) Math.floor(yBlocks / 2.0); y++) {
                 for (int x = unit.getX() - 4; x <= unit.getX() + 4; x++) {
                     Image img = getCorrespondingImage(canvas, drawX, drawY, x, y);
-                    if (img instanceof DefaultImage) {
-                        ((DefaultImage) img).draw(canvas, drawX, drawY);
-                    } else {
-                        ((AnimatedImage) img).draw(canvas, drawX, drawY);
+                    if (img != null) {
+                        if (img instanceof DefaultImage) {
+                            ((DefaultImage) img).draw(canvas, drawX, drawY);
+                        } else {
+                            ((AnimatedImage) img).draw(canvas, drawX, drawY);
+                        }
                     }
                     drawAndUpdateEnemies(canvas, drawX, drawY, y, x);
                     drawX += unitOfLength;
@@ -413,12 +415,6 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                 } else {
                     image.draw(canvas, x, y);
                 }
-                /*
-                image.rewind();
-                image.setDefaultX(x);
-                image.setDefaultY(y);
-                animations.add(image);
-                */
             }
             return false;
         }
@@ -426,37 +422,41 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         private Image getCorrespondingImage(Canvas canvas, int drawX, int drawY,
                                                    int x, int y) {
             Image img = null;
-            switch (terrain.getBlock(x, y).getType()) {
-                case "stone wall":
-                    img = stoneWall;
+            boolean walkable = terrain.getBlockWalkable(x, y);
+            switch (terrain.getBlockMaterial(x, y)) {
+                case "stone":
+                    if (walkable) {
+                        stoneFloor.draw(canvas, drawX, drawY);
+                    } else {
+                        stoneWall.draw(canvas, drawX, drawY);
+                    }
                     break;
-                case "stone floor":
-                    img = stoneFloor;
+                case "wooden":
+                    if (walkable) {
+                        woodenFloor.draw(canvas, drawX, drawY);
+                    } else {
+                        woodenWall.draw(canvas, drawX, drawY);
+                    }
                     break;
-                case "wooden wall":
-                    img = woodenWall;
-                    break;
-                case "wooden floor":
-                    img = woodenFloor;
+            }
+            switch (terrain.getBlockConfig(x, y)) {
+                case "none":
+                    img = null;
                     break;
                 case "chest":
                     img = chest;
-                    stoneFloor.draw(canvas, drawX, drawY);
                     break;
                 case "spawn":
                     img = spawn;
-                    stoneFloor.draw(canvas, drawX, drawY);
                     break;
                 case "portal":
                     img = portal;
-                    stoneFloor.draw(canvas, drawX, drawY);
                     break;
                 case "spikes":
                     if (terrain instanceof Terrain && !((Terrain) terrain).getTrap(x, y).getRevealed()) {
-                        img = stoneFloor;
+                        img = null;
                     } else {
                         img = spikesStatic;
-                        stoneFloor.draw(canvas, drawX, drawY);
                     }
                     break;
             }
@@ -507,21 +507,27 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
             Paint p = null;
             Paint floor = null;
             try {
-                switch (terrain.getBlock(x, y).getType()) {
-                    case "stone wall":
-                        p = darkGray;
+                boolean walkable = terrain.getBlockWalkable(x, y);
+                switch (terrain.getBlockMaterial(x, y)) {
+                    case "stone":
+                        if (walkable) {
+                            floor = lightGray;
+                        } else {
+                            floor = darkGray;
+                        }
                         break;
-                    case "wooden wall":
-                        p = darkBrown;
+                    case "wooden":
+                        if (walkable) {
+                            floor = lightBrown;
+                        } else {
+                            floor = darkBrown;
+                        }
                         break;
+                }
+                switch (terrain.getBlockConfig(x, y)) {
+                    case "none":
                     case "spawn":
-                        p = lightGray;
-                        break;
-                    case "wooden floor":
-                        floor = lightBrown;
-                        break;
-                    case "stone floor":
-                        floor = lightGray;
+                        p = floor;
                         break;
                     case "chest":
                         p = gold;
@@ -530,7 +536,11 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                         p = purple;
                         break;
                     case "spikes":
-                        p = white;
+                        if (terrain instanceof Terrain && !((Terrain) terrain).getTrap(x, y).getRevealed()) {
+                            p = floor;
+                        } else {
+                            p = white;
+                        }
                         break;
                 }
             } catch (ArrayIndexOutOfBoundsException e) {
@@ -539,8 +549,6 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
             if (floor != null) {
                 if (unit.getX() == x && unit.getY() == y) {
                     p = green;
-                } else {
-                    p = floor;
                 }
                 for (Enemy e : enemies) {
                     if (x == e.getX() && y == e.getY()) {

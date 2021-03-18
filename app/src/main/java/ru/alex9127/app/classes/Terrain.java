@@ -83,9 +83,9 @@ public class Terrain implements TerrainLike {
             do {
                 trapX = generateRandom(0, 128);
                 trapY = generateRandom(0, 128);
-                if (terrain[trapY][trapX].getType().endsWith("floor")) trapPlaced = true;
+                if (getBlockWalkable(trapX, trapY)) trapPlaced = true;
             } while (!trapPlaced);
-            terrain[trapY][trapX] = new Block(trapX, trapY, "spikes");
+            setBlockConfig(trapX, trapY, "spikes");
             traps[i] = new Trap(trapX, trapY);
         }
     }
@@ -96,9 +96,9 @@ public class Terrain implements TerrainLike {
         do {
             spawnX = generateRandom(0, 128);
             spawnY = generateRandom(0, 128);
-            if (terrain[spawnY][spawnX].getType().endsWith("floor")) spawnPlaced = true;
+            if (getBlockWalkable(spawnX, spawnY)) spawnPlaced = true;
         } while (!spawnPlaced);
-        terrain[spawnY][spawnX] = new Block(spawnX, spawnY, "spawn");
+        setBlockConfig(spawnX, spawnY, "spawn");;
         this.spawnX = spawnX;
         this.spawnY = spawnY;
     }
@@ -109,9 +109,9 @@ public class Terrain implements TerrainLike {
         do {
             portalX = generateRandom(0, 128);
             portalY = generateRandom(0, 128);
-            if (terrain[portalY][portalX].getType().endsWith("floor")) portalPlaced = true;
+            if (getBlockWalkable(portalX, portalY)) portalPlaced = true;
         } while (!portalPlaced);
-        terrain[portalY][portalX] = new Block(portalX, portalY, "portal");
+        setBlockConfig(portalX, portalY, "portal");
         this.portalX = portalX;
         this.portalY = portalY;
     }
@@ -138,11 +138,7 @@ public class Terrain implements TerrainLike {
             endRow = t;
         }
         for (int y = startRow; y <= endRow; y++) {
-            if (terrain[y][column].getType().startsWith("stone")) {
-                terrain[y][column] = new Block(column, y, "stone floor");
-            } else if (terrain[y][column].getType().startsWith("wooden")) {
-                terrain[y][column] = new Block(column, y, "wooden floor");
-            }
+            setBlockWalkable(column, y, true);
         }
     }
 
@@ -153,11 +149,7 @@ public class Terrain implements TerrainLike {
             endColumn = t;
         }
         for (int x = startColumn; x <= endColumn; x++) {
-            if (terrain[row][x].getType().startsWith("stone")) {
-                terrain[row][x] = new Block(x, row, "stone floor");
-            } else if (terrain[row][x].getType().startsWith("wooden")) {
-                terrain[row][x] = new Block(x, row, "wooden floor");
-            }
+            setBlockWalkable(x, row, true);
         }
     }
 
@@ -167,13 +159,13 @@ public class Terrain implements TerrainLike {
         do {
             chestX = generateRandom(0, 128);
             chestY = generateRandom(0, 128);
-            if (terrain[chestY][chestX].getType().endsWith("floor")) chestPlaced = true;
+            if (getBlockWalkable(chestX, chestY)) chestPlaced = true;
         } while (!chestPlaced);
-        terrain[chestY][chestX] = new Block(chestX, chestY, "chest");
+        setBlockConfig(chestX, chestY, "chest");
         for (int y = 0; y < size; y++) {
             for (int x = 0; x < size; x++) {
-                if (terrain[y][x].getType().endsWith("floor") && generateRandom(0, 10000) == 0) {
-                    terrain[y][x] = new Block(x, y, "chest");
+                if (getBlockWalkable(x, y) && generateRandom(0, 10000) == 0) {
+                    setBlockConfig(x, y, "chest");
                 }
             }
         }
@@ -201,12 +193,14 @@ public class Terrain implements TerrainLike {
         }
         for (int y = centerY - height - 3; y <= centerY + height + 3; y++) {
             for (int x = centerX - width - 3; x <= centerX + width + 3; x++) {
-                terrain[y][x] = new Block(x, y, material + " wall");
+                setBlockWalkable(x, y, false);
+                setBlockMaterial(x, y, material);
             }
         }
         for (int y = centerY - height; y <= centerY + height; y++) {
             for (int x = centerX - width; x <= centerX + width; x++) {
-                terrain[y][x] = new Block(x, y, material + " floor");
+                setBlockWalkable(x, y, true);
+                setBlockMaterial(x, y, material);
             }
         }
     }
@@ -218,7 +212,7 @@ public class Terrain implements TerrainLike {
     private void createWalls() {
         for (int y = 0; y < size; y++) {
             for (int x = 0; x < size; x++) {
-                terrain[y][x] = new Block(x, y, "stone wall");
+                terrain[y][x] = new Block(x, y, false, "stone", "none");
             }
         }
     }
@@ -234,8 +228,29 @@ public class Terrain implements TerrainLike {
     public Block getBlock(int x, int y) {
         return terrain[y][x];
     }
-    public void setBlock(int x, int y, String type) {
-        terrain[y][x] = new Block(x, y, type);
+
+    public boolean getBlockWalkable(int x, int y) {
+        return terrain[y][x].isWalkable();
+    }
+
+    public String getBlockMaterial(int x, int y) {
+        return terrain[y][x].getMaterial();
+    }
+
+    public String getBlockConfig(int x, int y) {
+        return terrain[y][x].getConfig();
+    }
+
+    public void setBlockWalkable(int x, int y, boolean isWalkable) {
+        terrain[y][x].setWalkable(isWalkable);
+    }
+
+    public void setBlockMaterial(int x, int y, String material) {
+        terrain[y][x].setMaterial(material);
+    }
+
+    public void setBlockConfig(int x, int y, String config) {
+        terrain[y][x].setConfig(config);
     }
 
     @NonNull

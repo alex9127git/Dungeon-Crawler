@@ -8,6 +8,11 @@ public interface TerrainLike {
     Terrain.Point getSpawnPoint();
     Terrain.Point getPortalPoint();
     Block getBlock(int x, int y);
-    void setBlock(int x, int y, String floor);
     int getSize();
+    public boolean getBlockWalkable(int x, int y);
+    public String getBlockMaterial(int x, int y);
+    public String getBlockConfig(int x, int y);
+    public void setBlockWalkable(int x, int y, boolean isWalkable);
+    public void setBlockMaterial(int x, int y, String material);
+    public void setBlockConfig(int x, int y, String config);
 }

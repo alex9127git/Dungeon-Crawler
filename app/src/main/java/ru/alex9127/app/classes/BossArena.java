@@ -21,8 +21,8 @@ public class BossArena implements TerrainLike {
         createArena();
         spawnX = spawnY = size / 4;
         portalX = portalY = size / 4 * 3;
-        terrain[spawnX][spawnY] = new Block(spawnX, spawnY, "spawn");
-        terrain[portalX][portalY] = new Block(portalX, portalY, "portal");
+        setBlockConfig(spawnX, spawnY, "spawn");
+        setBlockConfig(portalX, portalY, "portal");
     }
 
     public Terrain.Point getSpawnPoint() {
@@ -36,7 +36,7 @@ public class BossArena implements TerrainLike {
     private void createWalls() {
         for (int y = 0; y < size; y++) {
             for (int x = 0; x < size; x++) {
-                terrain[y][x] = new Block(x, y, "stone wall");
+                terrain[y][x] = new Block(x, y, false, "stone", "none");
             }
         }
     }
@@ -44,7 +44,7 @@ public class BossArena implements TerrainLike {
     private void createArena() {
         for (int y = size / 4; y < size / 4 * 3; y++) {
             for (int x = size / 4; x < size / 4 * 3; x++) {
-                terrain[y][x] = new Block(x, y, "stone floor");
+                setBlockWalkable(x, y, true);
             }
         }
     }
@@ -52,8 +52,29 @@ public class BossArena implements TerrainLike {
     public Block getBlock(int x, int y) {
         return terrain[y][x];
     }
-    public void setBlock(int x, int y, String type) {
-        terrain[y][x] = new Block(x, y, type);
+
+    public boolean getBlockWalkable(int x, int y) {
+        return terrain[y][x].isWalkable();
+    }
+
+    public String getBlockMaterial(int x, int y) {
+        return terrain[y][x].getMaterial();
+    }
+
+    public String getBlockConfig(int x, int y) {
+        return terrain[y][x].getConfig();
+    }
+
+    public void setBlockWalkable(int x, int y, boolean isWalkable) {
+        terrain[y][x].setWalkable(isWalkable);
+    }
+
+    public void setBlockMaterial(int x, int y, String material) {
+        terrain[y][x].setMaterial(material);
+    }
+
+    public void setBlockConfig(int x, int y, String config) {
+        terrain[y][x].setConfig(config);
     }
 
     public int getSize() {
