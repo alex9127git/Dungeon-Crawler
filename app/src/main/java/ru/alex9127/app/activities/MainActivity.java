@@ -64,18 +64,5 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        class InsertData extends AsyncTask<Intent, Integer, Void> {
-            protected Void doInBackground(Intent... args) {
-                Intent i = args[0];
-                databaseConnector.insert(i.getStringExtra("Name"),
-                        i.getIntExtra("Floors cleared", 0),
-                        i.getIntExtra("Unit level", 0),
-                        i.getIntExtra("Enemies killed", 0));
-                return null;
-            }
-        }
-        if (resultCode == Activity.RESULT_OK && requestCode == 0) {
-            new InsertData().execute(data);
-        }
     }
 }

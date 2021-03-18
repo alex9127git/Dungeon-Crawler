@@ -3,71 +3,28 @@ package ru.alex9127.app.drawing;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.*;
 import android.view.*;
 import androidx.annotation.NonNull;
 import java.util.ArrayList;
 import ru.alex9127.app.R;
 import ru.alex9127.app.classes.*;
-import ru.alex9127.app.interfaces.*;
 
 import static ru.alex9127.app.drawing.ImageManager.*;
 
 @SuppressLint("ViewConstructor")
 public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
-    private TerrainLike terrain = new Terrain(128);
-    private final Unit unit;
-    private final ArrayList<Enemy> enemies = new ArrayList<>();
+    private final GameLogic game;
     private int xStart, yStart, yBlocks;
     public DrawThread drawer;
     private final Activity a;
-    private int level = 1;
-    private int enemiesKilled = 0;
 
     public DrawSurface(Context context, String name) {
         super(context);
-        unit = new Unit(name, 100, 10, 0, 15,
-                terrain.getSpawnPoint().getX(), terrain.getSpawnPoint().getY());
+        game = new GameLogic(name);
         a = (Activity) context;
         getHolder().addCallback(this);
-        generateEnemies();
-    }
-
-    private void generateEnemies() {
-        enemies.clear();
-        boolean enemyPlaced;
-        for (int i = 0; i < (level % 6 == 0 ? 1 : level); i++) {
-            enemyPlaced = false;
-            do {
-                int enemyX = (int) (Math.random() * 128);
-                int enemyY = (int) (Math.random() * 128);
-                if (terrain.getBlockWalkable(enemyX, enemyY)) {
-                    if (level % 6 != 0) {
-                        if (level <= 6) {
-                            enemies.add(new Enemy("SLIME",
-                                    (int) (20 + (int) (Math.random() * 10) * (1 + level * 0.5)),
-                                    (int) (4 + (int) (Math.random() * 2) * (1 + level * 0.5)),
-                                    (int) (2 + (int) (Math.random() * 1) * (1 + level * 0.5)), 0,
-                                    enemyX, enemyY, (30 + (int) (Math.random() * 20)) * level));
-                        } else {
-                            enemies.add(new Enemy("ZOMBIE",
-                                    (int) (50 + (int) (Math.random() * 30) * (1 + level * 0.5)),
-                                    (int) (10 + (int) (Math.random() * 5) * (1 + level * 0.5)),
-                                    (int) (5 + (int) (Math.random() * 3) * (1 + level * 0.5)), 0,
-                                    enemyX, enemyY, (70 + (int) (Math.random() * 50)) * level));
-                        }
-                    } else {
-                        enemies.add(new Enemy("KING SLIME",
-                                (int) (1000 + (int) (Math.random() * 500) * (1 + level * 0.5)),
-                                (int) (20 + (int) (Math.random() * 10) * (1 + level * 0.5)),
-                                (int) (0 + (int) (Math.random() * 0) * (1 + level * 0.5)), 0,
-                                enemyX, enemyY, (1000 + (int) (Math.random() * 500)) * level));
-                    }
-                    enemyPlaced = true;
-                }
-            } while (!enemyPlaced);
-        }
+        game.generateEnemies();
     }
 
     @Override
@@ -77,16 +34,6 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         yStart = getTerrainDrawData()[1];
         yBlocks = getTerrainDrawData()[2];
         generateImages(getResources(), getWidth(), getHeight(), yStart, yBlocks);
-    }
-
-    private void enemyAI() {
-        for (Enemy e : enemies) {
-            e.decide(unit, terrain);
-            if (Pathfinder.distance(unit.getX(), unit.getY(), e.getX(), e.getY()) == 0 && e.alive()) {
-                int dmg = -1 * (e.getAttackPower() - unit.getDefensePower());
-                unit.changeHp(Math.min(dmg, 0));
-            }
-        }
     }
 
     public int[] getTerrainDrawData() {
@@ -105,27 +52,27 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         if (!drawer.castingMagic) {
             if (!drawer.paused) {
                 if (buttonDown.getBoundaryRect().contains(x, y)) {
-                    s = unit.checkMove(0, 1, terrain);
+                    s = game.unit.checkMove(0, 1, game.terrain);
                 }
                 if (buttonUp.getBoundaryRect().contains(x, y)) {
-                    s = unit.checkMove(0, -1, terrain);
+                    s = game.unit.checkMove(0, -1, game.terrain);
                 }
                 if (buttonLeft.getBoundaryRect().contains(x, y)) {
-                    s = unit.checkMove(-1, 0, terrain);
+                    s = game.unit.checkMove(-1, 0, game.terrain);
                 }
                 if (buttonRight.getBoundaryRect().contains(x, y)) {
-                    s = unit.checkMove(1, 0, terrain);
+                    s = game.unit.checkMove(1, 0, game.terrain);
                 }
                 if (buttonMiniMap.getBoundaryRect().contains(x, y)) {
                     drawer.miniMapOpened = !drawer.miniMapOpened;
                 }
                 if (buttonAttack.getBoundaryRect().contains(x, y)) {
-                    for (Enemy e : enemies) {
-                        if (Pathfinder.distance(unit.getX(), unit.getY(), e.getX(), e.getY()) <= 2.0) {
-                            e.changeHp(-1 * (unit.getAttackPower() - e.getDefensePower()));
+                    for (Enemy e : game.enemies) {
+                        if (Pathfinder.distance(game.unit.getX(), game.unit.getY(), e.getX(), e.getY()) <= 2.0) {
+                            e.changeHp(-1 * (game.unit.getAttackPower() - e.getDefensePower()));
                         }
                     }
-                    enemyAI();
+                    game.enemyAI();
                 }
                 if (buttonMagic.getBoundaryRect().contains(x, y)) {
                     drawer.castingMagic = true;
@@ -138,10 +85,10 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                     }
                 }
                 if (s.startsWith("moved")) {
-                    enemyAI();
+                    game.enemyAI();
                 }
-                if (terrain.getBlockConfig(unit.getX(), unit.getY()).equals("chest")) {
-                    terrain.setBlockConfig(unit.getX(), unit.getY(), "none");
+                if (game.terrain.getBlockConfig(game.unit.getX(), game.unit.getY()).equals("chest")) {
+                    game.terrain.setBlockConfig(game.unit.getX(), game.unit.getY(), "none");
                     String str = "";
                     if (s.equals("atk")) {
                         str = "Found better weapon";
@@ -159,17 +106,17 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
             }
         } else {
             drawer.castingMagic = false;
-            if (unit.getManaPercentage() > 0) {
-                int blockX = unit.getX() - 4;
-                int blockY = unit.getY() - (int) Math.floor(yBlocks / 2.0);
+            if (game.unit.getManaPercentage() > 0) {
+                int blockX = game.unit.getX() - 4;
+                int blockY = game.unit.getY() - (int) Math.floor(yBlocks / 2.0);
                 blockX += Math.round((double) x / unitOfLength);
                 blockY += Math.round((double) (y - yStart) / unitOfLength);
-                unit.changeMana(-1);
-                for (Enemy e : enemies) {
+                game.unit.changeMana(-1);
+                for (Enemy e : game.enemies) {
                     if (Pathfinder.distance(e.getX(), e.getY(), blockX, blockY) < 2)
-                        e.changeHp(-1 * (unit.getAttackPower() - e.getDefensePower()));
+                        e.changeHp(-1 * (game.unit.getAttackPower() - e.getDefensePower()));
                 }
-                enemyAI();
+                game.enemyAI();
             }
         }
     }
@@ -254,15 +201,15 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                             drawTerrain(canvas);
                             if (!castingMagic) drawButtons(canvas);
                             updateMiniMap(canvas);
-                            checkUnitAlive();
-                            checkNextLevel();
+                            game.checkUnitAlive(a);
+                            game.checkNextLevel();
                             animationsUpdate();
                             textPopupsDraw(canvas);
                             timeCount();
                         } else {
                             canvas.drawColor(getResources().getColor(R.color.darkGray));
                             buttonPause.draw(canvas);
-                            drawCompoundText(unit.stats(), buttonPause.getBoundaryRect().left,
+                            drawCompoundText(game.unit.stats(), buttonPause.getBoundaryRect().left,
                                     buttonPause.getBoundaryRect().bottom + unitOfLength, white, canvas);
                         }
                     } finally {
@@ -277,22 +224,12 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
             currentTime = System.currentTimeMillis();
             if (((int) (runTime / 1000)) > seconds) {
                 seconds++;
-                if (seconds % 3 == 0 && unit.getManaPercentage() < 1)
-                    unit.changeMana(1);
+                if (seconds % 3 == 0 && game.unit.getManaPercentage() < 1)
+                    game.unit.changeMana(1);
             }
         }
 
-        private void checkUnitAlive() {
-            if (!unit.alive()) {
-                Intent i = new Intent();
-                i.putExtra("Name", unit.getName());
-                i.putExtra("Floors cleared", level - 1);
-                i.putExtra("Unit level", unit.getLevel());
-                i.putExtra("Enemies killed", enemiesKilled);
-                a.setResult(Activity.RESULT_OK, i);
-                a.finish();
-            }
-        }
+
 
         private void textPopupsDraw(Canvas canvas) {
             ArrayList<TextImage> t = new ArrayList<>();
@@ -314,27 +251,13 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
 
-        private void checkNextLevel() {
-            if (unit.getX() == terrain.getPortalPoint().getX() && unit.getY() == terrain.getPortalPoint().getY() && enemies.isEmpty()) {
-                level++;
-                if (level % 6 == 0) {
-                    terrain = new BossArena(128);
-                } else {
-                    terrain = new Terrain(128);
-                }
-                unit.setX(terrain.getSpawnPoint().getX());
-                unit.setY(terrain.getSpawnPoint().getY());
-                generateEnemies();
-            }
-        }
-
         void drawTerrain(Canvas canvas) {
             int drawX = xStart;
             int drawY = yStart;
-            for (int y = unit.getY() - (int) Math.floor(yBlocks / 2.0);
-                 y <= unit.getY() + (int) Math.floor(yBlocks / 2.0); y++) {
-                for (int x = unit.getX() - 4; x <= unit.getX() + 4; x++) {
-                    terrain.revealBlock(x, y);
+            for (int y = game.unit.getY() - (int) Math.floor(yBlocks / 2.0);
+                 y <= game.unit.getY() + (int) Math.floor(yBlocks / 2.0); y++) {
+                for (int x = game.unit.getX() - 4; x <= game.unit.getX() + 4; x++) {
+                    game.terrain.revealBlock(x, y);
                     Image img = getCorrespondingImage(canvas, drawX, drawY, x, y);
                     if (img != null) {
                         if (img instanceof DefaultImage) {
@@ -351,14 +274,14 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
             }
             warrior.draw(canvas);
             drawBar(canvas, new Rect(0, 0, getWidth(),
-                    unitOfLength / 4), darkGray, red, unit.getHpPercentage());
+                    unitOfLength / 4), darkGray, red, game.unit.getHpPercentage());
             drawBar(canvas, new Rect(0, unitOfLength / 4, getWidth(),
-                    unitOfLength / 2), darkGray, blue, unit.getManaPercentage());
+                    unitOfLength / 2), darkGray, blue, game.unit.getManaPercentage());
         }
 
         private void drawAndUpdateEnemies(Canvas canvas, int drawX, int drawY, int y, int x) {
             ArrayList<Integer> deadEnemies = new ArrayList<>();
-            for (Enemy e:enemies) {
+            for (Enemy e:game.enemies) {
                 if (x == e.getX() && y == e.getY()) {
                     if (e.alive()) {
                         drawEnemyImage(e, canvas, drawX, drawY);
@@ -368,15 +291,15 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                                 drawY + (unitOfLength / 2)), darkGray,
                                 red, e.getHpPercentage());
                     } else {
-                        if (drawEnemyDeadImage(e, canvas, drawX, drawY)) deadEnemies.add(enemies.indexOf(e));
+                        if (drawEnemyDeadImage(e, canvas, drawX, drawY))
+                            deadEnemies.add(game.enemies.indexOf(e));
                     }
                 }
             }
             for (int i = deadEnemies.size() - 1; i >= 0; i--) {
-                Enemy e = enemies.get(deadEnemies.get(i));
-                unit.addXp(e.getXpReward());
-                enemies.remove(e);
-                enemiesKilled++;
+                Enemy e = game.enemies.get(deadEnemies.get(i));
+                game.unit.addXp(e.getXpReward());
+                game.enemies.remove(e);
                 text.rewind();
                 TextImage t = text;
                 t.setText("+" + e.getXpReward() + " XP");
@@ -425,8 +348,8 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         private Image getCorrespondingImage(Canvas canvas, int drawX, int drawY,
                                                    int x, int y) {
             Image img = null;
-            boolean walkable = terrain.getBlockWalkable(x, y);
-            switch (terrain.getBlockMaterial(x, y)) {
+            boolean walkable = game.terrain.getBlockWalkable(x, y);
+            switch (game.terrain.getBlockMaterial(x, y)) {
                 case "stone":
                     if (walkable) {
                         stoneFloor.draw(canvas, drawX, drawY);
@@ -442,7 +365,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                     }
                     break;
             }
-            switch (terrain.getBlockConfig(x, y)) {
+            switch (game.terrain.getBlockConfig(x, y)) {
                 case "none":
                     img = null;
                     break;
@@ -456,7 +379,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                     img = portal;
                     break;
                 case "spikes":
-                    if (terrain instanceof Terrain && ((Terrain) terrain).getTrap(x, y).isNotRevealed()) {
+                    if (game.terrain instanceof Terrain && ((Terrain) game.terrain).getTrap(x, y).isNotRevealed()) {
                         img = null;
                     } else {
                         img = spikesStatic;
@@ -489,13 +412,13 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                 float left = (float) (unitOfLength);
                 float top = (float) (yStart + unitOfLength * (yBlocks / 2.0 - 3.5));
                 float side = (float) (unitOfLength * 7) /
-                        (compactMode ? 35 : terrain.getSize());
+                        (compactMode ? 35 : game.terrain.getSize());
                 float drawX = left;
                 float drawY = top;
-                for (int y = compactMode ? unit.getY() - 17 : 0;
-                     y < (compactMode ? unit.getY() + 18 : terrain.getSize()); y++) {
-                    for (int x = compactMode ? unit.getX() - 17 : 0;
-                         x < (compactMode ? unit.getX() + 18 : terrain.getSize()); x++) {
+                for (int y = compactMode ? game.unit.getY() - 17 : 0;
+                     y < (compactMode ? game.unit.getY() + 18 : game.terrain.getSize()); y++) {
+                    for (int x = compactMode ? game.unit.getX() - 17 : 0;
+                         x < (compactMode ? game.unit.getX() + 18 : game.terrain.getSize()); x++) {
                         p = chooseCorrespondingColor(x, y);
                         canvas.drawRect(drawX, drawY, drawX + side, drawY + side, p);
                         drawX += side;
@@ -509,10 +432,10 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         private Paint chooseCorrespondingColor(int x, int y) {
             Paint p = null;
             Paint floor = null;
-            if (terrain.isBlockRevealed(x, y)) {
+            if (game.terrain.isBlockRevealed(x, y)) {
                 try {
-                    boolean walkable = terrain.getBlockWalkable(x, y);
-                    switch (terrain.getBlockMaterial(x, y)) {
+                    boolean walkable = game.terrain.getBlockWalkable(x, y);
+                    switch (game.terrain.getBlockMaterial(x, y)) {
                         case "stone":
                             if (walkable) {
                                 floor = lightGray;
@@ -528,7 +451,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                             }
                             break;
                     }
-                    switch (terrain.getBlockConfig(x, y)) {
+                    switch (game.terrain.getBlockConfig(x, y)) {
                         case "none":
                         case "spawn":
                             p = floor;
@@ -540,7 +463,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                             p = purple;
                             break;
                         case "spikes":
-                            if (terrain instanceof Terrain && ((Terrain) terrain).getTrap(x, y).isNotRevealed()) {
+                            if (game.terrain instanceof Terrain && ((Terrain) game.terrain).getTrap(x, y).isNotRevealed()) {
                                 p = floor;
                             } else {
                                 p = white;
@@ -551,10 +474,10 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                     p = darkGray;
                 }
                 if (floor != null) {
-                    if (unit.getX() == x && unit.getY() == y) {
+                    if (game.unit.getX() == x && game.unit.getY() == y) {
                         p = green;
                     }
-                    for (Enemy e : enemies) {
+                    for (Enemy e : game.enemies) {
                         if (x == e.getX() && y == e.getY()) {
                             p = red;
                             break;
@@ -586,14 +509,9 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
 Метод checkMove в Unit'е:
 Проверки и возврат строк -- не лучшее решение. Подумайте над enum'ами.
 Подумайте над тем, чтобы использовать класс Random.
-Логику циклов по генерации комнаты generateRoom может выделить в отдельный метод? В чём у них принципиальное отличие?
-В generatePaths почему вложенный уикл до rooms[0].length-1, хотя бежите Вы по roomsList?
-Зачем Вам в generatePaths два набора циклов? Вы же дублируете проходы для первых комнат.
-fillRow/fillColumn содержат логику со строками, от которой, я надеюсь, Вы избавитесь.
 Использование статических полей в Pathfinder'е -- не самое лучшее решение. Подумайте, как можно заменить использование глобальной переменной info на локальную версию.
 Логика InventoryItem на строках тоже меня настораживает.
 
-Логику самой игры лучше убрать из класса DrawSurface в какой-нибудь класс Game. DrawSurface пусть отвечает только за рисование(вывод игры на экран).
 При генерации врагов много одинакового кода. Может как-то можно его обобщить?
 Не надо привязываться строго к уровню 6.
 Может стоит отдельно решить вопрос придумывания точки спавна (можно вообще делегировать этот вопрос Terrain'у, т.к. он может решить эту задачу) и силы врага, а уже потом создавать его?

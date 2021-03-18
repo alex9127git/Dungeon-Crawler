@@ -193,13 +193,8 @@ public class Terrain implements TerrainLike {
         }
         for (int y = centerY - height - 3; y <= centerY + height + 3; y++) {
             for (int x = centerX - width - 3; x <= centerX + width + 3; x++) {
-                setBlockWalkable(x, y, false);
-                setBlockMaterial(x, y, material);
-            }
-        }
-        for (int y = centerY - height; y <= centerY + height; y++) {
-            for (int x = centerX - width; x <= centerX + width; x++) {
-                setBlockWalkable(x, y, true);
+                setBlockWalkable(x, y, y >= centerY - height && y <= centerY + height &&
+                        x >= centerX - width && x <= centerX + width);
                 setBlockMaterial(x, y, material);
             }
         }
