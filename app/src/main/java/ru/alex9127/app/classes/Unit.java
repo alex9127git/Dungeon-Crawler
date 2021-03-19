@@ -57,6 +57,7 @@ public class Unit extends Entity {
     }
 
     public String checkMove(int dx, int dy, TerrainLike terrain) {
+        terrain.removeBlockEntity(getX(), getY(), this);
         if (terrain.getBlockWalkable(this.getX() + dx, this.getY() + dy)) {
             String config = terrain.getBlockConfig(this.getX() + dx, this.getY() + dy);
             move(dx, dy);
@@ -77,6 +78,7 @@ public class Unit extends Entity {
             }
             return "moved";
         }
+        terrain.removeBlockEntity(getX(), getY(), this);
         return "notMoved";
     }
 

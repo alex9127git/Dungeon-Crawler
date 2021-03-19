@@ -19,13 +19,14 @@ public class Terrain implements TerrainLike {
     public final ArrayList<Enemy> enemies = new ArrayList<>();
     public final int level;
 
-    public Terrain(int size, int level) {
+    public Terrain(int size, int level, Unit unit) {
         this.size = size;
         this.terrain = new Block[size][size];
         this.rooms = new Room[4][4];
         this.traps = new Trap[5 + (int) (Math.random() * 5)];
         this.level = level;
         createTerrain();
+        addBlockEntity(spawnX, spawnY, unit);
     }
 
     static class Room {
@@ -41,7 +42,8 @@ public class Terrain implements TerrainLike {
     public void generateEnemies() {
         enemies.clear();
         boolean enemyPlaced;
-        for (int i = 0; i < (level % 6 == 0 ? 1 : level); i++) {
+        for (int i = 0; i < (level % 6 == 0 ? 1 : (int) (level * (3 + Math.random() * 2)));
+             i++) {
             enemyPlaced = false;
             do {
                 int enemyX = (int) (Math.random() * 128);
@@ -65,7 +67,7 @@ public class Terrain implements TerrainLike {
                                 500, enemyX, enemyY);
                     }
                     enemies.add(e);
-                    setBlockEnemy(enemyX, enemyY, e);
+                    addBlockEntity(enemyX, enemyY, e);
                     enemyPlaced = true;
                 }
             } while (!enemyPlaced);
@@ -273,10 +275,6 @@ public class Terrain implements TerrainLike {
         return terrain[y][x].getConfig();
     }
 
-    public Enemy getBlockEnemy(int x, int y) {
-        return terrain[y][x].getEnemy();
-    }
-
     public boolean isBlockRevealed(int x, int y) {
         return terrain[y][x].isShown();
     }
@@ -293,8 +291,12 @@ public class Terrain implements TerrainLike {
         terrain[y][x].setConfig(config);
     }
 
-    public void setBlockEnemy(int x, int y, Enemy e) {
-        terrain[y][x].giveEnemy(e);
+    public void addBlockEntity(int x, int y, Entity e) {
+        terrain[y][x].addEntity(e);
+    }
+
+    public void removeBlockEntity(int x, int y, Entity e) {
+        terrain[y][x].removeEntity(e);
     }
 
     public void revealBlock(int x, int y) {

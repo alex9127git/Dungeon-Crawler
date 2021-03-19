@@ -14,11 +14,12 @@ public class BossArena implements TerrainLike {
     public final ArrayList<Enemy> enemies = new ArrayList<>();
     public final int level;
 
-    public BossArena(int size, int level) {
+    public BossArena(int size, int level, Unit unit) {
         this.size = size;
         this.terrain = new Block[size][size];
         this.level = level;
         createTerrain();
+        addBlockEntity(spawnX, spawnY, unit);
     }
 
     public void createTerrain() {
@@ -57,7 +58,7 @@ public class BossArena implements TerrainLike {
                                 500, enemyX, enemyY);
                     }
                     enemies.add(e);
-                    setBlockEnemy(enemyX, enemyY, e);
+                    addBlockEntity(enemyX, enemyY, e);
                     enemyPlaced = true;
                 }
             } while (!enemyPlaced);
@@ -100,10 +101,6 @@ public class BossArena implements TerrainLike {
         return terrain[y][x].getConfig();
     }
 
-    public Enemy getBlockEnemy(int x, int y) {
-        return terrain[y][x].getEnemy();
-    }
-
     public boolean isBlockRevealed(int x, int y) {
         return terrain[y][x].isShown();
     }
@@ -120,8 +117,12 @@ public class BossArena implements TerrainLike {
         terrain[y][x].setConfig(config);
     }
 
-    public void setBlockEnemy(int x, int y, Enemy e) {
-        terrain[y][x].giveEnemy(e);
+    public void addBlockEntity(int x, int y, Entity e) {
+        terrain[y][x].addEntity(e);
+    }
+
+    public void removeBlockEntity(int x, int y, Entity e) {
+        terrain[y][x].removeEntity(e);
     }
 
     public void revealBlock(int x, int y) {

@@ -2,6 +2,8 @@ package ru.alex9127.app.classes;
 
 import androidx.annotation.NonNull;
 
+import java.util.ArrayList;
+
 import ru.alex9127.app.interfaces.Locatable;
 
 public class Block implements Locatable {
@@ -11,7 +13,7 @@ public class Block implements Locatable {
     private String material;
     private String config;
     private boolean isShown;
-    private Enemy enemy;
+    private ArrayList<Entity> entities;
 
     public Block(int x, int y, boolean isWalkable, String material, String config) {
         setX(x);
@@ -20,7 +22,7 @@ public class Block implements Locatable {
         this.material = material;
         this.config = config;
         this.isShown = false;
-        this.enemy = null;
+        this.entities = new ArrayList<>();
     }
 
     @Override
@@ -61,8 +63,8 @@ public class Block implements Locatable {
         return config;
     }
 
-    public Enemy getEnemy() {
-        return enemy;
+    public ArrayList<Entity> getEntities() {
+        return entities;
     }
 
     public void setWalkable(boolean walkable) {
@@ -81,7 +83,11 @@ public class Block implements Locatable {
         this.config = config;
     }
 
-    public void giveEnemy(Enemy enemy) {
-        this.enemy = enemy;
+    public void addEntity(Entity e) {
+        this.entities.add(e);
+    }
+
+    public void removeEntity(Entity e) {
+        this.entities.remove(e);
     }
 }

@@ -323,7 +323,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                 Enemy e = game.terrain.getEnemies().get(deadEnemies.get(i));
                 game.unit.addXp(e.getXpReward());
                 game.terrain.getEnemies().remove(e);
-                game.terrain.setBlockEnemy(x, y, null);
+                game.terrain.removeBlockEntity(x, y, e);
                 text.rewind();
                 TextImage t = text;
                 t.setText("+" + e.getXpReward() + " XP");

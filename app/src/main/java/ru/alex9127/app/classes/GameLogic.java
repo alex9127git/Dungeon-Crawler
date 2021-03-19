@@ -2,9 +2,6 @@ package ru.alex9127.app.classes;
 
 import android.app.Activity;
 import android.content.Intent;
-import java.util.Random;
-
-import java.util.*;
 
 import ru.alex9127.app.interfaces.TerrainLike;
 
@@ -15,9 +12,10 @@ public class GameLogic {
 
     public GameLogic(String name) {
         level = 1;
-        terrain = new Terrain(128, level);
+        terrain = new Terrain(128, level, null);
         this.unit = new Unit(name, 100, 10, 0, 15,
                 terrain.getSpawnPoint().getX(), terrain.getSpawnPoint().getY());
+        terrain.addBlockEntity(unit.getX(), unit.getY(), unit);
     }
 
     public void checkNextLevel() {
@@ -25,9 +23,9 @@ public class GameLogic {
                 unit.getY() == terrain.getPortalPoint().getY() && terrain.getEnemies().isEmpty()) {
             level++;
             if (level % 6 == 0) {
-                terrain = new BossArena(128, level);
+                terrain = new BossArena(128, level, unit);
             } else {
-                terrain = new Terrain(128, level);
+                terrain = new Terrain(128, level, unit);
             }
             unit.setX(terrain.getSpawnPoint().getX());
             unit.setY(terrain.getSpawnPoint().getY());

@@ -14,12 +14,12 @@ public class Enemy extends Entity {
         if (alive()) {
             if (distanceTo(unit) < 10) {
                 int[][] path = Pathfinder.findPath(terrain, this, unit);
-                terrain.setBlockEnemy(getX(), getY(), null);
+                terrain.removeBlockEntity(getX(), getY(), this);
                 if (path.length > 1 && (int) (Math.random() * 10) < 9) {
                     setX(path[1][0]);
                     setY(path[1][1]);
                 }
-                terrain.setBlockEnemy(getX(), getY(), this);
+                terrain.addBlockEntity(getX(), getY(), this);
             }
         }
     }
