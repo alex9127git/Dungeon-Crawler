@@ -24,7 +24,6 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         game = new GameLogic(name);
         a = (Activity) context;
         getHolder().addCallback(this);
-        game.generateEnemies();
     }
 
     @Override
@@ -87,7 +86,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                     drawer.miniMapOpened = !drawer.miniMapOpened;
                 }
                 if (buttonAttack.getBoundaryRect().contains(x, y)) {
-                    for (Enemy e : game.enemies) {
+                    for (Enemy e : game.terrain.getEnemies()) {
                         if (Pathfinder.distance(game.unit.getX(), game.unit.getY(), e.getX(), e.getY()) <= 2.0) {
                             int atk = game.unit.getAttackPower() - e.getDefensePower();
                             e.changeHp(-atk);
@@ -137,7 +136,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                 blockX += Math.round((double) x / unitOfLength);
                 blockY += Math.round((double) (y - yStart) / unitOfLength);
                 game.unit.changeMana(-1);
-                for (Enemy e : game.enemies) {
+                for (Enemy e : game.terrain.getEnemies()) {
                     if (Pathfinder.distance(e.getX(), e.getY(), blockX, blockY) < 2)
                         e.changeHp(-1 * (game.unit.getAttackPower() - e.getDefensePower()));
                 }
@@ -282,8 +281,8 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                 for (int x = game.unit.getX() - 4; x <= game.unit.getX() + 4; x++) {
                     game.terrain.revealBlock(x, y);
                     Images images = getCorrespondingImages(x, y);
-                    if (images != null) {
-                        ((DefaultImage) images.getBase()).draw(canvas, drawX, drawY);
+                    ((DefaultImage) images.getBase()).draw(canvas, drawX, drawY);
+                    if (images.getConfig() != null) {
                         if (images.getConfig() instanceof DefaultImage) {
                             ((DefaultImage) images.getConfig()).draw(canvas, drawX, drawY);
                         } else {
@@ -305,7 +304,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
 
         private void drawAndUpdateEnemies(Canvas canvas, int drawX, int drawY, int y, int x) {
             ArrayList<Integer> deadEnemies = new ArrayList<>();
-            for (Enemy e:game.enemies) {
+            for (Enemy e:game.terrain.getEnemies()) {
                 if (x == e.getX() && y == e.getY()) {
                     if (e.alive()) {
                         drawEnemyImage(e, canvas, drawX, drawY);
@@ -316,14 +315,15 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                                 red, e.getHpPercentage());
                     } else {
                         if (drawEnemyDeadImage(e, canvas, drawX, drawY))
-                            deadEnemies.add(game.enemies.indexOf(e));
+                            deadEnemies.add(game.terrain.getEnemies().indexOf(e));
                     }
                 }
             }
             for (int i = deadEnemies.size() - 1; i >= 0; i--) {
-                Enemy e = game.enemies.get(deadEnemies.get(i));
+                Enemy e = game.terrain.getEnemies().get(deadEnemies.get(i));
                 game.unit.addXp(e.getXpReward());
-                game.enemies.remove(e);
+                game.terrain.getEnemies().remove(e);
+                game.terrain.setBlockEnemy(x, y, null);
                 text.rewind();
                 TextImage t = text;
                 t.setText("+" + e.getXpReward() + " XP");
@@ -519,7 +519,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                     if (game.unit.getX() == x && game.unit.getY() == y) {
                         p = green;
                     }
-                    for (Enemy e : game.enemies) {
+                    for (Enemy e : game.terrain.getEnemies()) {
                         if (x == e.getX() && y == e.getY()) {
                             p = red;
                             break;

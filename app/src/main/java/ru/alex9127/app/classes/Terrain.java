@@ -2,6 +2,7 @@ package ru.alex9127.app.classes;
 
 import androidx.annotation.NonNull;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import ru.alex9127.app.interfaces.TerrainLike;
@@ -15,12 +16,15 @@ public class Terrain implements TerrainLike {
     public int portalX;
     public int portalY;
     public final Trap[] traps;
+    public final ArrayList<Enemy> enemies = new ArrayList<>();
+    public final int level;
 
-    public Terrain(int size) {
+    public Terrain(int size, int level) {
         this.size = size;
         this.terrain = new Block[size][size];
         this.rooms = new Room[4][4];
         this.traps = new Trap[5 + (int) (Math.random() * 5)];
+        this.level = level;
         createTerrain();
     }
 
@@ -31,6 +35,40 @@ public class Terrain implements TerrainLike {
         public Room(int centerX, int centerY) {
             this.centerX = centerX;
             this.centerY = centerY;
+        }
+    }
+
+    public void generateEnemies() {
+        enemies.clear();
+        boolean enemyPlaced;
+        for (int i = 0; i < (level % 6 == 0 ? 1 : level); i++) {
+            enemyPlaced = false;
+            do {
+                int enemyX = (int) (Math.random() * 128);
+                int enemyY = (int) (Math.random() * 128);
+                if (getBlockWalkable(enemyX, enemyY)) {
+                    Enemy e;
+                    if (level % 6 != 0) {
+                        if (level <= 6) {
+                            e = EnemyGenerator.getEnemy("SLIME", level, 20, 10,
+                                    4, 2, 2, 1, 30,
+                                    20, enemyX, enemyY);
+
+                        } else {
+                            e = EnemyGenerator.getEnemy("ZOMBIE", level, 50, 30,
+                                    10, 5, 5, 3, 70,
+                                    50, enemyX, enemyY);
+                        }
+                    } else {
+                        e = EnemyGenerator.getEnemy("KING SLIME", level, 1000, 500,
+                                20, 10, 0, 1, 1000,
+                                500, enemyX, enemyY);
+                    }
+                    enemies.add(e);
+                    setBlockEnemy(enemyX, enemyY, e);
+                    enemyPlaced = true;
+                }
+            } while (!enemyPlaced);
         }
     }
 
@@ -76,6 +114,7 @@ public class Terrain implements TerrainLike {
         generatePortal();
         generateChests();
         generateTraps();
+        generateEnemies();
     }
 
     private void generateTraps() {
@@ -234,6 +273,10 @@ public class Terrain implements TerrainLike {
         return terrain[y][x].getConfig();
     }
 
+    public Enemy getBlockEnemy(int x, int y) {
+        return terrain[y][x].getEnemy();
+    }
+
     public boolean isBlockRevealed(int x, int y) {
         return terrain[y][x].isShown();
     }
@@ -248,6 +291,10 @@ public class Terrain implements TerrainLike {
 
     public void setBlockConfig(int x, int y, String config) {
         terrain[y][x].setConfig(config);
+    }
+
+    public void setBlockEnemy(int x, int y, Enemy e) {
+        terrain[y][x].giveEnemy(e);
     }
 
     public void revealBlock(int x, int y) {
@@ -269,6 +316,11 @@ public class Terrain implements TerrainLike {
 
     public int getSize() {
         return size;
+    }
+
+    @Override
+    public ArrayList<Enemy> getEnemies() {
+        return enemies;
     }
 
     public void revealTrap(int x, int y) {

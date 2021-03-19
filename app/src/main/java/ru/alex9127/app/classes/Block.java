@@ -11,6 +11,7 @@ public class Block implements Locatable {
     private String material;
     private String config;
     private boolean isShown;
+    private Enemy enemy;
 
     public Block(int x, int y, boolean isWalkable, String material, String config) {
         setX(x);
@@ -19,6 +20,7 @@ public class Block implements Locatable {
         this.material = material;
         this.config = config;
         this.isShown = false;
+        this.enemy = null;
     }
 
     @Override
@@ -45,10 +47,6 @@ public class Block implements Locatable {
         return isWalkable;
     }
 
-    public void reveal() {
-        isShown = true;
-    }
-
     public boolean isShown() {
         return isShown;
     }
@@ -63,8 +61,16 @@ public class Block implements Locatable {
         return config;
     }
 
+    public Enemy getEnemy() {
+        return enemy;
+    }
+
     public void setWalkable(boolean walkable) {
         isWalkable = walkable;
+    }
+
+    public void reveal() {
+        isShown = true;
     }
 
     public void setMaterial(String material) {
@@ -73,5 +79,9 @@ public class Block implements Locatable {
 
     public void setConfig(String config) {
         this.config = config;
+    }
+
+    public void giveEnemy(Enemy enemy) {
+        this.enemy = enemy;
     }
 }

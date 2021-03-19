@@ -1,5 +1,7 @@
 package ru.alex9127.app.classes;
 
+import java.util.ArrayList;
+
 import ru.alex9127.app.interfaces.TerrainLike;
 
 public class BossArena implements TerrainLike {
@@ -9,10 +11,13 @@ public class BossArena implements TerrainLike {
     public int spawnY;
     public int portalX;
     public int portalY;
+    public final ArrayList<Enemy> enemies = new ArrayList<>();
+    public final int level;
 
-    public BossArena(int size) {
+    public BossArena(int size, int level) {
         this.size = size;
         this.terrain = new Block[size][size];
+        this.level = level;
         createTerrain();
     }
 
@@ -23,6 +28,40 @@ public class BossArena implements TerrainLike {
         portalX = portalY = size / 4 * 3;
         setBlockConfig(spawnX, spawnY, "spawn");
         setBlockConfig(portalX, portalY, "portal");
+    }
+
+    public void generateEnemies() {
+        enemies.clear();
+        boolean enemyPlaced;
+        for (int i = 0; i < (level % 6 == 0 ? 1 : level); i++) {
+            enemyPlaced = false;
+            do {
+                int enemyX = (int) (Math.random() * 128);
+                int enemyY = (int) (Math.random() * 128);
+                if (getBlockWalkable(enemyX, enemyY)) {
+                    Enemy e;
+                    if (level % 6 != 0) {
+                        if (level <= 6) {
+                            e = EnemyGenerator.getEnemy("SLIME", level, 20, 10,
+                                    4, 2, 2, 1, 30,
+                                    20, enemyX, enemyY);
+
+                        } else {
+                            e = EnemyGenerator.getEnemy("ZOMBIE", level, 50, 30,
+                                    10, 5, 5, 3, 70,
+                                    50, enemyX, enemyY);
+                        }
+                    } else {
+                        e = EnemyGenerator.getEnemy("KING SLIME", level, 1000, 500,
+                                20, 10, 0, 0, 1000,
+                                500, enemyX, enemyY);
+                    }
+                    enemies.add(e);
+                    setBlockEnemy(enemyX, enemyY, e);
+                    enemyPlaced = true;
+                }
+            } while (!enemyPlaced);
+        }
     }
 
     public Terrain.Point getSpawnPoint() {
@@ -61,6 +100,10 @@ public class BossArena implements TerrainLike {
         return terrain[y][x].getConfig();
     }
 
+    public Enemy getBlockEnemy(int x, int y) {
+        return terrain[y][x].getEnemy();
+    }
+
     public boolean isBlockRevealed(int x, int y) {
         return terrain[y][x].isShown();
     }
@@ -77,11 +120,20 @@ public class BossArena implements TerrainLike {
         terrain[y][x].setConfig(config);
     }
 
+    public void setBlockEnemy(int x, int y, Enemy e) {
+        terrain[y][x].giveEnemy(e);
+    }
+
     public void revealBlock(int x, int y) {
         terrain[y][x].reveal();
     }
 
     public int getSize() {
         return size;
+    }
+
+    @Override
+    public ArrayList<Enemy> getEnemies() {
+        return enemies;
     }
 }
