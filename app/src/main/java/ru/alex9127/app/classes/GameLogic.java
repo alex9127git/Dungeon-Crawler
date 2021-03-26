@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Intent;
 
 import ru.alex9127.app.interfaces.TerrainLike;
+import ru.alex9127.app.terrain.BossArena;
+import ru.alex9127.app.terrain.Terrain;
 
 public class GameLogic {
     public final Unit unit;

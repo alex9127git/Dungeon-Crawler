@@ -1,7 +1,11 @@
-package ru.alex9127.app.classes;
+package ru.alex9127.app.terrain;
 
 import java.util.ArrayList;
 
+import ru.alex9127.app.classes.Enemy;
+import ru.alex9127.app.classes.EnemyGenerator;
+import ru.alex9127.app.classes.Entity;
+import ru.alex9127.app.classes.Unit;
 import ru.alex9127.app.interfaces.TerrainLike;
 
 public class BossArena implements TerrainLike {

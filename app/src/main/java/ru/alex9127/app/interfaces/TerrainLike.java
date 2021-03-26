@@ -3,6 +3,7 @@ package ru.alex9127.app.interfaces;
 import java.util.ArrayList;
 
 import ru.alex9127.app.classes.*;
+import ru.alex9127.app.terrain.Terrain;
 
 public interface TerrainLike {
     void createTerrain();

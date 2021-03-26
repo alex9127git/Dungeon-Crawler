@@ -1,6 +1,7 @@
 package ru.alex9127.app.classes;
 
 import ru.alex9127.app.interfaces.TerrainLike;
+import ru.alex9127.app.terrain.Terrain;
 
 public class Unit extends Entity {
     private int level, xp, xpNeeded;

@@ -1,9 +1,10 @@
-package ru.alex9127.app.classes;
+package ru.alex9127.app.terrain;
 
 import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
 
+import ru.alex9127.app.classes.Entity;
 import ru.alex9127.app.interfaces.Locatable;
 
 public class Block implements Locatable {

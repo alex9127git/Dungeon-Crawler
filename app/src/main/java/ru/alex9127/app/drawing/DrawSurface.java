@@ -13,6 +13,7 @@ import java.util.ConcurrentModificationException;
 
 import ru.alex9127.app.R;
 import ru.alex9127.app.classes.*;
+import ru.alex9127.app.terrain.Terrain;
 
 import static ru.alex9127.app.drawing.ImageManager.*;
 
