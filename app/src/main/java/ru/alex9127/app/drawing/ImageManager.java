@@ -7,14 +7,19 @@ import ru.alex9127.app.R;
 
 public class ImageManager {
     public static DefaultImage stoneFloor, stoneWall, woodenFloor, woodenWall, spikesStatic, chest, spawn;
-    public static AnimatedImage slime, slimeDefeated, zombie, zombieDefeated, portal, spikes;
+    public static AnimatedImage greenSlime, blueSlime, greenSlimeDefeated, blueSlimeDefeated,
+            zombie, zombieDefeated, portal, spikes;
     public static StaticImage warrior, buttonUp, buttonDown, buttonLeft, buttonRight, buttonMiniMap,
-            buttonAttack, buttonMagic, buttonPause;
+            buttonAttack, buttonMagic, buttonPause, attackMiniGame;
     public static TextImage text;
     public static int unitOfLength;
+    public static int screenWidth;
+    public static int screenHeight;
 
     public static void generateImages(Resources resources, int screenWidth, int screenHeight,
                                       int yStart, int yBlocks) {
+        ImageManager.screenWidth = screenWidth;
+        ImageManager.screenHeight = screenHeight;
         unitOfLength = screenWidth / 9;
         stoneFloor = new DefaultImage(BitmapFactory.decodeResource(resources, R.drawable.stonefloor),
                 unitOfLength, unitOfLength);
@@ -32,13 +37,20 @@ public class ImageManager {
                 unitOfLength - 20, unitOfLength - 20);
         spawn = new DefaultImage(BitmapFactory.decodeResource(resources, R.drawable.spawn),
                 unitOfLength, unitOfLength);
+        attackMiniGame = new StaticImage(BitmapFactory.decodeResource(resources, R.drawable.attackminigame),
+                unitOfLength, unitOfLength, 0, 0);
         warrior = new StaticImage(BitmapFactory.decodeResource(resources, R.drawable.warrior),
                 unitOfLength, unitOfLength, screenWidth / 2,
                 screenHeight / 2);
-        slime = new AnimatedImage(BitmapFactory.decodeResource(resources, R.drawable.slime),
+        greenSlime = new AnimatedImage(BitmapFactory.decodeResource(resources, R.drawable.greenslime),
                 unitOfLength, unitOfLength, 4, 100);
-        slimeDefeated = new AnimatedImage(BitmapFactory.decodeResource(resources,
-                R.drawable.slimedefeated), unitOfLength, unitOfLength, 4,
+        blueSlime = new AnimatedImage(BitmapFactory.decodeResource(resources, R.drawable.blueslime),
+                unitOfLength, unitOfLength, 4, 100);
+        greenSlimeDefeated = new AnimatedImage(BitmapFactory.decodeResource(resources,
+                R.drawable.greenslimedefeated), unitOfLength, unitOfLength, 4,
+                200);
+        blueSlimeDefeated = new AnimatedImage(BitmapFactory.decodeResource(resources,
+                R.drawable.blueslimedefeated), unitOfLength, unitOfLength, 4,
                 200);
         zombie = new AnimatedImage(BitmapFactory.decodeResource(resources, R.drawable.zombie),
                 unitOfLength, unitOfLength, 4, 100);
@@ -72,13 +84,13 @@ public class ImageManager {
         buttonMagic = new StaticImage(BitmapFactory.decodeResource(resources,
                 R.drawable.buttonmagic), unitOfLength * 2, unitOfLength * 2,
                 (int) (unitOfLength * 7.5),
-                (int) (yStart + unitOfLength * (yBlocks - 4 - yBlocks % 2)));
+                yStart + unitOfLength * (yBlocks - 4 - yBlocks % 2));
         text = new TextImage("Text", 1000, screenWidth / 2, screenHeight / 2);
     }
 
     public static void animationsUpdate() {
-        slime.update();
-        slimeDefeated.update();
+        greenSlime.update();
+        greenSlimeDefeated.update();
         zombie.update();
         zombieDefeated.update();
         portal.update();

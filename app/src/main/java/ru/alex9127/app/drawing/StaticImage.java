@@ -9,9 +9,9 @@ public class StaticImage extends Image {
     private final Bitmap bitmap;
     private final int width;
     private final int height;
-    private final int defaultX;
-    private final int defaultY;
-    private final Rect boundaryRect;
+    private int defaultX;
+    private int defaultY;
+    private Rect boundaryRect;
 
     public StaticImage(Bitmap bitmap, int width, int height, int defaultX, int defaultY) {
         this.bitmap = bitmap;
@@ -19,6 +19,10 @@ public class StaticImage extends Image {
         this.height = height;
         this.defaultX = defaultX;
         this.defaultY = defaultY;
+        updateBoundaryRect();
+    }
+
+    private void updateBoundaryRect() {
         this.boundaryRect = new Rect(defaultX - width / 2, defaultY - height / 2,
                 defaultX + width / 2, defaultY + height / 2);
     }
@@ -31,5 +35,23 @@ public class StaticImage extends Image {
 
     public Rect getBoundaryRect() {
         return boundaryRect;
+    }
+
+    public void setDefaultX(int defaultX) {
+        this.defaultX = defaultX;
+        updateBoundaryRect();
+
+    }
+
+    public void setDefaultY(int defaultY) {
+        this.defaultY = defaultY;
+        updateBoundaryRect();
+    }
+
+    public StaticImage clone() {
+        try {
+            super.clone();
+        } catch (CloneNotSupportedException ignored) {}
+        return new StaticImage(this.bitmap, this.width, this.height, this.defaultX, this.defaultY);
     }
 }

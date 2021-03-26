@@ -42,7 +42,7 @@ public class Terrain implements TerrainLike {
     public void generateEnemies() {
         enemies.clear();
         boolean enemyPlaced;
-        for (int i = 0; i < (level % 6 == 0 ? 1 : (int) (level * (3 + Math.random() * 2)));
+        for (int i = 0; i < (level % 6 == 0 ? 1 : (int) (level * (10 + Math.random() * 10)));
              i++) {
             enemyPlaced = false;
             do {
@@ -51,11 +51,21 @@ public class Terrain implements TerrainLike {
                 if (getBlockWalkable(enemyX, enemyY)) {
                     Enemy e;
                     if (level % 6 != 0) {
-                        if (level <= 6) {
-                            e = EnemyGenerator.getEnemy("SLIME", level, 20, 10,
+                        if (level < 1) {
+                            e = EnemyGenerator.getEnemy("GREEN SLIME", level, 20, 10,
                                     4, 2, 2, 1, 30,
                                     20, enemyX, enemyY);
 
+                        } else if (level < 6) {
+                            if (new Random().nextInt(2) == 1) {
+                                e = EnemyGenerator.getEnemy("BLUE SLIME", level, 15, 5,
+                                        3, 1, 1, 1, 50,
+                                        30, enemyX, enemyY);
+                            } else {
+                                e = EnemyGenerator.getEnemy("GREEN SLIME", level, 20, 10,
+                                        4, 2, 2, 1, 30,
+                                        20, enemyX, enemyY);
+                            }
                         } else {
                             e = EnemyGenerator.getEnemy("ZOMBIE", level, 50, 30,
                                     10, 5, 5, 3, 70,

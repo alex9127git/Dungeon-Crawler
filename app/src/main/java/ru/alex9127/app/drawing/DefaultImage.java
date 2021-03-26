@@ -18,4 +18,11 @@ public class DefaultImage extends Image {
                 new Rect(x - width / 2, y - height / 2,
                         x + width / 2, y + height / 2), new Paint());
     }
+
+    public DefaultImage clone() {
+        try {
+            super.clone();
+        } catch (CloneNotSupportedException ignored) {}
+        return new DefaultImage(this.bitmap, this.width, this.height);
+    }
 }

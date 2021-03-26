@@ -4,9 +4,13 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.*;
+import android.util.Log;
 import android.view.*;
 import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
+
 import ru.alex9127.app.R;
 import ru.alex9127.app.classes.*;
 
@@ -70,59 +74,76 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         String s = "";
         if (!drawer.castingMagic) {
             if (!drawer.paused) {
-                if (buttonDown.getBoundaryRect().contains(x, y)) {
-                    s = game.unit.checkMove(0, 1, game.terrain);
-                }
-                if (buttonUp.getBoundaryRect().contains(x, y)) {
-                    s = game.unit.checkMove(0, -1, game.terrain);
-                }
-                if (buttonLeft.getBoundaryRect().contains(x, y)) {
-                    s = game.unit.checkMove(-1, 0, game.terrain);
-                }
-                if (buttonRight.getBoundaryRect().contains(x, y)) {
-                    s = game.unit.checkMove(1, 0, game.terrain);
-                }
-                if (buttonMiniMap.getBoundaryRect().contains(x, y)) {
-                    drawer.miniMapOpened = !drawer.miniMapOpened;
-                }
-                if (buttonAttack.getBoundaryRect().contains(x, y)) {
-                    for (Enemy e : game.terrain.getEnemies()) {
-                        if (Pathfinder.distance(game.unit.getX(), game.unit.getY(), e.getX(), e.getY()) <= 2.0) {
-                            int atk = game.unit.getAttackPower() - e.getDefensePower();
-                            e.changeHp(-atk);
+                if (!drawer.isAttackMiniGame) {
+                    if (buttonDown.getBoundaryRect().contains(x, y)) {
+                        s = game.unit.checkMove(0, 1, game.terrain);
+                    }
+                    if (buttonUp.getBoundaryRect().contains(x, y)) {
+                        s = game.unit.checkMove(0, -1, game.terrain);
+                    }
+                    if (buttonLeft.getBoundaryRect().contains(x, y)) {
+                        s = game.unit.checkMove(-1, 0, game.terrain);
+                    }
+                    if (buttonRight.getBoundaryRect().contains(x, y)) {
+                        s = game.unit.checkMove(1, 0, game.terrain);
+                    }
+                    if (buttonMiniMap.getBoundaryRect().contains(x, y)) {
+                        drawer.miniMapOpened = !drawer.miniMapOpened;
+                    }
+                    if (buttonAttack.getBoundaryRect().contains(x, y)) {
+                        for (Enemy e : game.terrain.getEnemies()) {
+                            if (Pathfinder.distance(game.unit.getX(), game.unit.getY(), e.getX(), e.getY()) <= 2.0) {
+                                drawer.attackedEnemies.add(e);
+                            }
+                        }
+                        if (drawer.attackedEnemies.isEmpty()) {
                             text.rewind();
-                            TextImage t = text;
-                            t.setText(Integer.toString(atk));
+                            TextImage t = text.clone();
+                            t.setText("No enemies nearby to attack");
                             drawer.textImages.add(t);
+                        } else {
+                            drawer.isAttackMiniGame = true;
+                            drawer.attackMiniGameTime = 0;
+                            drawer.attackMiniGameCoinsSpawned = 0;
+                            drawer.atkMultiplier = 1;
                         }
                     }
-                    game.enemyAI();
-                }
-                if (buttonMagic.getBoundaryRect().contains(x, y)) {
-                    drawer.castingMagic = true;
-                }
-                if (new Rect((int) (getWidth() / 9 * 0.5), getHeight() / 2 - getWidth() / 9 * 4,
-                        (int) (getWidth() / 9 * 8.5), getHeight() / 2 + getWidth() / 9 * 4).
-                        contains(x, y)) {
-                    if (drawer.miniMapOpened) {
-                        drawer.compactMode = !drawer.compactMode;
+                    if (buttonMagic.getBoundaryRect().contains(x, y)) {
+                        drawer.castingMagic = true;
                     }
-                }
-                if (s.startsWith("moved")) {
-                    game.enemyAI();
-                }
-                if (game.terrain.getBlockConfig(game.unit.getX(), game.unit.getY()).equals("chest")) {
-                    game.terrain.setBlockConfig(game.unit.getX(), game.unit.getY(), "none");
-                    String str = "";
-                    if (s.equals("atk")) {
-                        str = "Found better weapon";
-                    } else if (s.equals("def")) {
-                        str = "Found better armor";
+                    if (new Rect((int) (getWidth() / 9 * 0.5), getHeight() / 2 - getWidth() / 9 * 4,
+                            (int) (getWidth() / 9 * 8.5), getHeight() / 2 + getWidth() / 9 * 4).
+                            contains(x, y)) {
+                        if (drawer.miniMapOpened) {
+                            drawer.compactMode = !drawer.compactMode;
+                        }
                     }
-                    text.rewind();
-                    TextImage t = text;
-                    t.setText(str);
-                    drawer.textImages.add(t);
+                    if (s.startsWith("moved")) {
+                        game.enemyAI();
+                    }
+                    if (game.terrain.getBlockConfig(game.unit.getX(), game.unit.getY()).equals("chest")) {
+                        game.terrain.setBlockConfig(game.unit.getX(), game.unit.getY(), "none");
+                        String str = "";
+                        if (s.equals("atk")) {
+                            str = "Found better weapon";
+                        } else if (s.equals("def")) {
+                            str = "Found better armor";
+                        }
+                        text.rewind();
+                        TextImage t = text.clone();
+                        t.setText(str);
+                        drawer.textImages.add(t);
+                    }
+                } else {
+                    ArrayList<StaticImage> usedCoins = new ArrayList<>();
+                    for (StaticImage coin:drawer.coins) {
+                        if (coin.getBoundaryRect().contains(x, y)) {
+                            drawer.atkMultiplier *= 1.1;
+                            usedCoins.add(coin);
+                            Log.v("LOG", "Click detected");
+                        }
+                    }
+                    for (StaticImage c:usedCoins) drawer.coins.remove(c);
                 }
             }
             if (buttonPause.getBoundaryRect().contains(x, y)) {
@@ -176,7 +197,11 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
     private class DrawThread extends Thread {
         private final SurfaceHolder surfaceHolder;
         private volatile boolean running = true;
-        private boolean miniMapOpened = false, compactMode = false, paused = false, castingMagic = false;
+        private boolean miniMapOpened = false, compactMode = false, paused = false, castingMagic = false,
+        isAttackMiniGame = false;
+        private int attackMiniGameTime = 0;
+        private int attackMiniGameCoinsSpawned = 0;
+        private double atkMultiplier = 1;
         private final Paint red = new Paint();
         private final Paint darkGray = new Paint();
         private final Paint lightGray = new Paint();
@@ -189,6 +214,8 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         private final Paint purple = new Paint();
         private final Paint white = new Paint();
         private final ArrayList<TextImage> textImages = new ArrayList<>();
+        private final ArrayList<StaticImage> coins = new ArrayList<>();
+        private final ArrayList<Enemy> attackedEnemies = new ArrayList<>();
         private long currentTime = System.currentTimeMillis();
         private long runTime = 0;
         private long seconds = 0;
@@ -220,16 +247,47 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                 Canvas canvas = surfaceHolder.lockCanvas();
                 if (canvas != null) {
                     try {
+                        timeCount();
                         if (!paused) {
-                            canvas.drawColor(Color.BLACK);
-                            drawTerrain(canvas);
-                            if (!castingMagic) drawButtons(canvas);
-                            updateMiniMap(canvas);
-                            game.checkUnitAlive(a);
-                            game.checkNextLevel();
-                            animationsUpdate();
-                            textPopupsDraw(canvas);
-                            timeCount();
+                            if (!isAttackMiniGame) {
+                                canvas.drawColor(Color.BLACK);
+                                drawTerrain(canvas);
+                                if (!castingMagic) drawButtons(canvas);
+                                updateMiniMap(canvas);
+                                game.checkUnitAlive(a);
+                                game.checkNextLevel();
+                                animationsUpdate();
+                                textPopupsDraw(canvas);
+                            } else {
+                                canvas.drawColor(getResources().getColor(R.color.darkGray));
+                                drawCompoundText("Try to get as many attack coins\nas you can in five seconds!", unitOfLength,
+                                        unitOfLength, white, canvas);
+                                if (attackMiniGameTime > 200 * (attackMiniGameCoinsSpawned + 1)) {
+                                    attackMiniGameCoinsSpawned++;
+                                    StaticImage coin = attackMiniGame.clone();
+                                    coin.setDefaultX(unitOfLength / 2 + (int) (Math.random() * (screenWidth - unitOfLength)));
+                                    coin.setDefaultY(unitOfLength / 2 + (int) (Math.random() * (screenHeight - unitOfLength)));
+                                    coins.add(coin);
+                                }
+                                try {
+                                    for (StaticImage coin : coins) {
+                                        coin.draw(canvas);
+                                    }
+                                } catch (ConcurrentModificationException ignored) {}
+                                if (attackMiniGameTime > 5000) {
+                                    isAttackMiniGame = false;
+                                    coins.clear();
+                                    for (Enemy e : drawer.attackedEnemies) {
+                                        int atk = (int) ((game.unit.getAttackPower() - e.getDefensePower()) * atkMultiplier);
+                                        e.changeHp(-atk);
+                                        text.rewind();
+                                        TextImage t = text.clone();
+                                        t.setText(Integer.toString(atk));
+                                        drawer.textImages.add(t);
+                                    }
+                                    game.enemyAI();
+                                }
+                            }
                         } else {
                             canvas.drawColor(getResources().getColor(R.color.darkGray));
                             buttonPause.draw(canvas);
@@ -244,7 +302,9 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         private void timeCount() {
-            runTime += (System.currentTimeMillis() - currentTime);
+            int diff = (int) (System.currentTimeMillis() - currentTime);
+            runTime += diff;
+            if (isAttackMiniGame) attackMiniGameTime += diff;
             currentTime = System.currentTimeMillis();
             if (((int) (runTime / 1000)) > seconds) {
                 seconds++;
@@ -325,7 +385,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                 game.terrain.getEnemies().remove(e);
                 game.terrain.removeBlockEntity(x, y, e);
                 text.rewind();
-                TextImage t = text;
+                TextImage t = text.clone();
                 t.setText("+" + e.getXpReward() + " XP");
                 textImages.add(t);
             }
@@ -334,9 +394,12 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         private void drawEnemyImage(Enemy enemy, Canvas canvas, int x, int y) {
             AnimatedImage image = null;
             switch (enemy.getName()) {
-                case "SLIME":
+                case "GREEN SLIME":
                 case "KING SLIME":
-                    image = slime;
+                    image = greenSlime;
+                    break;
+                case "BLUE SLIME":
+                    image = blueSlime;
                     break;
                 case "ZOMBIE":
                     image = zombie;
@@ -350,9 +413,12 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         private boolean drawEnemyDeadImage(Enemy enemy, Canvas canvas, int x, int y) {
             AnimatedImage image = null;
             switch (enemy.getName()) {
-                case "SLIME":
+                case "GREEN SLIME":
                 case "KING SLIME":
-                    image = slimeDefeated;
+                    image = greenSlimeDefeated;
+                    break;
+                case "BLUE SLIME":
+                    image = blueSlimeDefeated;
                     break;
                 case "ZOMBIE":
                     image = zombieDefeated;
@@ -542,7 +608,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
 
 
 // TODO: сделать базу данных
-// TODO: сделать мини игры, связанные с атакой или защитой
+// TODO: сделать мини игры, связанные с защитой
 // TODO: сделать раунд игры конечной
 /* TODO:
 Бегло посмотрел проект.
@@ -553,7 +619,6 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
 Логика InventoryItem на строках тоже меня настораживает.
 
 Не надо привязываться строго к уровню 6.
-Может стоит отдельно решить вопрос придумывания точки спавна (можно вообще делегировать этот вопрос Terrain'у, т.к. он может решить эту задачу) и силы врага, а уже потом создавать его?
 В рисовалках может стоит избавиться от case'ов заменив их на мапы или массивы (Вы же уберёте ещё и строки?)
 В ImageManager'е я бы подумал от избавления от статических полей. Можно попробовать сделать это без них.
 Может логику работы с кнопками как-то загнать в общий цикл обработки?

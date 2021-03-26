@@ -44,4 +44,11 @@ public class TextImage extends Image {
     public void setText(String s) {
         text = s;
     }
+
+    public TextImage clone() {
+        try {
+            super.clone();
+        } catch (CloneNotSupportedException ignored) {}
+        return new TextImage(this.text, this.totalTime, this.x, this.y);
+    }
 }

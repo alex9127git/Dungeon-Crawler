@@ -16,8 +16,13 @@ public class Enemy extends Entity {
                 int[][] path = Pathfinder.findPath(terrain, this, unit);
                 terrain.removeBlockEntity(getX(), getY(), this);
                 if (path.length > 1 && (int) (Math.random() * 10) < 9) {
-                    setX(path[1][0]);
-                    setY(path[1][1]);
+                    if (getName().equals("BLUE SLIME") && path.length > 2) {
+                        setX(path[2][0]);
+                        setY(path[2][1]);
+                    } else {
+                        setX(path[1][0]);
+                        setY(path[1][1]);
+                    }
                 }
                 terrain.addBlockEntity(getX(), getY(), this);
             }

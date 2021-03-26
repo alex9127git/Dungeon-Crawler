@@ -54,4 +54,11 @@ public class AnimatedImage extends Image {
         currentFrame = 0;
         animationCycles = 0;
     }
+
+    public AnimatedImage clone() {
+        try {
+            super.clone();
+        } catch (CloneNotSupportedException ignored) {}
+        return new AnimatedImage(this.bitmap, this.width, this.height, this.framesNumber, this.frameTime);
+    }
 }
