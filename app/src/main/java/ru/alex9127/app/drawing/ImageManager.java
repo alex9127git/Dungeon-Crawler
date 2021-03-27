@@ -10,7 +10,7 @@ public class ImageManager {
     public static AnimatedImage greenSlime, blueSlime, greenSlimeDefeated, blueSlimeDefeated,
             zombie, zombieDefeated, portal, spikes;
     public static StaticImage warrior, buttonUp, buttonDown, buttonLeft, buttonRight, buttonMiniMap,
-            buttonAttack, buttonMagic, buttonPause, attackMiniGame;
+            buttonAttack, buttonMagic, buttonPause, attackMiniGame, defenseMiniGame;
     public static TextImage text;
     public static int unitOfLength;
     public static int screenWidth;
@@ -38,6 +38,8 @@ public class ImageManager {
         spawn = new DefaultImage(BitmapFactory.decodeResource(resources, R.drawable.spawn),
                 unitOfLength, unitOfLength);
         attackMiniGame = new StaticImage(BitmapFactory.decodeResource(resources, R.drawable.attackminigame),
+                unitOfLength, unitOfLength, 0, 0);
+        defenseMiniGame = new StaticImage(BitmapFactory.decodeResource(resources, R.drawable.defenseminigame),
                 unitOfLength, unitOfLength, 0, 0);
         warrior = new StaticImage(BitmapFactory.decodeResource(resources, R.drawable.warrior),
                 unitOfLength, unitOfLength, screenWidth / 2,

@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.*;
-import android.util.Log;
 import android.view.*;
 import androidx.annotation.NonNull;
 
@@ -74,8 +73,8 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
     public void handleClick(int x, int y) {
         String s = "";
         if (!drawer.castingMagic) {
-            if (!drawer.paused) {
-                if (!drawer.isAttackMiniGame) {
+            if (!drawer.isAttackMiniGame && !drawer.isDefenseMiniGame) {
+                if (!drawer.paused) {
                     if (buttonDown.getBoundaryRect().contains(x, y)) {
                         s = game.unit.checkMove(0, 1, game.terrain);
                     }
@@ -120,7 +119,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                         }
                     }
                     if (s.startsWith("moved")) {
-                        game.enemyAI();
+                        drawer.dmg = game.enemyAI();
                     }
                     if (game.terrain.getBlockConfig(game.unit.getX(), game.unit.getY()).equals("chest")) {
                         game.terrain.setBlockConfig(game.unit.getX(), game.unit.getY(), "none");
@@ -135,20 +134,28 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                         t.setText(str);
                         drawer.textImages.add(t);
                     }
-                } else {
-                    ArrayList<StaticImage> usedCoins = new ArrayList<>();
-                    for (StaticImage coin:drawer.coins) {
-                        if (coin.getBoundaryRect().contains(x, y)) {
-                            drawer.atkMultiplier *= 1.1;
-                            usedCoins.add(coin);
-                            Log.v("LOG", "Click detected");
-                        }
-                    }
-                    for (StaticImage c:usedCoins) drawer.coins.remove(c);
                 }
-            }
-            if (buttonPause.getBoundaryRect().contains(x, y)) {
-                drawer.paused = !drawer.paused;
+                if (buttonPause.getBoundaryRect().contains(x, y)) {
+                    drawer.paused = !drawer.paused;
+                }
+            } else if (drawer.isAttackMiniGame) {
+                ArrayList<StaticImage> usedCoins = new ArrayList<>();
+                for (StaticImage coin:drawer.attackCoins) {
+                    if (coin.getBoundaryRect().contains(x, y)) {
+                        drawer.atkMultiplier *= 1.1;
+                        usedCoins.add(coin);
+                    }
+                }
+                for (StaticImage c:usedCoins) drawer.attackCoins.remove(c);
+            } else if (drawer.isDefenseMiniGame) {
+                ArrayList<StaticImage> usedCoins = new ArrayList<>();
+                for (StaticImage coin:drawer.defenseCoins) {
+                    if (coin.getBoundaryRect().contains(x, y)) {
+                        drawer.dmgMultiplier *= 0.95;
+                        usedCoins.add(coin);
+                    }
+                }
+                for (StaticImage c:usedCoins) drawer.defenseCoins.remove(c);
             }
         } else {
             drawer.castingMagic = false;
@@ -162,7 +169,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                     if (Pathfinder.distance(e.getX(), e.getY(), blockX, blockY) < 2)
                         e.changeHp(-1 * (game.unit.getAttackPower() - e.getDefensePower()));
                 }
-                game.enemyAI();
+                drawer.dmg = game.enemyAI();
             }
         }
     }
@@ -199,10 +206,14 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         private final SurfaceHolder surfaceHolder;
         private volatile boolean running = true;
         private boolean miniMapOpened = false, compactMode = false, paused = false, castingMagic = false,
-        isAttackMiniGame = false;
+        isAttackMiniGame = false, isDefenseMiniGame = false;
+        private int dmg;
         private int attackMiniGameTime = 0;
         private int attackMiniGameCoinsSpawned = 0;
         private double atkMultiplier = 1;
+        private int defenseMiniGameTime = 0;
+        private int defenseMiniGameCoinsSpawned = 0;
+        private double dmgMultiplier = 1;
         private final Paint red = new Paint();
         private final Paint darkGray = new Paint();
         private final Paint lightGray = new Paint();
@@ -215,7 +226,8 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         private final Paint purple = new Paint();
         private final Paint white = new Paint();
         private final ArrayList<TextImage> textImages = new ArrayList<>();
-        private final ArrayList<StaticImage> coins = new ArrayList<>();
+        private final ArrayList<StaticImage> attackCoins = new ArrayList<>();
+        private final ArrayList<StaticImage> defenseCoins = new ArrayList<>();
         private final ArrayList<Enemy> attackedEnemies = new ArrayList<>();
         private long currentTime = System.currentTimeMillis();
         private long runTime = 0;
@@ -250,7 +262,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                     try {
                         timeCount();
                         if (!paused) {
-                            if (!isAttackMiniGame) {
+                            if (!isAttackMiniGame && !isDefenseMiniGame) {
                                 canvas.drawColor(Color.BLACK);
                                 drawTerrain(canvas);
                                 if (!castingMagic) drawButtons(canvas);
@@ -259,35 +271,24 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                                 game.checkNextLevel();
                                 animationsUpdate();
                                 textPopupsDraw(canvas);
-                            } else {
+                            } else if (isAttackMiniGame) {
                                 canvas.drawColor(getResources().getColor(R.color.darkGray));
                                 drawCompoundText("Try to get as many attack coins\nas you can in five seconds!", unitOfLength,
                                         unitOfLength, white, canvas);
                                 if (attackMiniGameTime > 200 * (attackMiniGameCoinsSpawned + 1)) {
-                                    attackMiniGameCoinsSpawned++;
-                                    StaticImage coin = attackMiniGame.clone();
-                                    coin.setDefaultX(unitOfLength / 2 + (int) (Math.random() * (screenWidth - unitOfLength)));
-                                    coin.setDefaultY(unitOfLength / 2 + (int) (Math.random() * (screenHeight - unitOfLength)));
-                                    coins.add(coin);
+                                    spawnAttackMiniGameCoin();
                                 }
-                                try {
-                                    for (StaticImage coin : coins) {
-                                        coin.draw(canvas);
-                                    }
-                                } catch (ConcurrentModificationException ignored) {}
-                                if (attackMiniGameTime > 5000) {
-                                    isAttackMiniGame = false;
-                                    coins.clear();
-                                    for (Enemy e : drawer.attackedEnemies) {
-                                        int atk = (int) ((game.unit.getAttackPower() - e.getDefensePower()) * atkMultiplier);
-                                        e.changeHp(-atk);
-                                        text.rewind();
-                                        TextImage t = text.clone();
-                                        t.setText(Integer.toString(atk));
-                                        drawer.textImages.add(t);
-                                    }
-                                    game.enemyAI();
+                                drawAttackMiniGameCoins(canvas);
+                                checkAttackMiniGameOver();
+                            } else if (isDefenseMiniGame) {
+                                canvas.drawColor(getResources().getColor(R.color.darkGray));
+                                drawCompoundText("Try to get as many defense coins\nas you can in five seconds!", unitOfLength,
+                                        unitOfLength, white, canvas);
+                                if (defenseMiniGameTime > 200 * (defenseMiniGameCoinsSpawned + 1)) {
+                                    spawnDefenseMiniGameCoin();
                                 }
+                                drawDefenseMiniGameCoins(canvas);
+                                checkDefenseMiniGameOver();
                             }
                         } else {
                             canvas.drawColor(getResources().getColor(R.color.darkGray));
@@ -302,15 +303,79 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
 
+        private void checkAttackMiniGameOver() {
+            if (attackMiniGameTime > 5000) {
+                isAttackMiniGame = false;
+                attackCoins.clear();
+                for (Enemy e : drawer.attackedEnemies) {
+                    int atk = (int) ((game.unit.getAttackPower() - e.getDefensePower()) * atkMultiplier);
+                    e.changeHp(-atk);
+                    text.rewind();
+                    TextImage t = text.clone();
+                    t.setText(Integer.toString(atk));
+                    drawer.textImages.add(t);
+                }
+                drawer.dmg = game.enemyAI();
+            }
+        }
+
+        private void checkDefenseMiniGameOver() {
+            if (defenseMiniGameTime > 5000) {
+                isDefenseMiniGame = false;
+                defenseCoins.clear();
+                game.unit.changeHp((int) (dmg * dmgMultiplier));
+            }
+        }
+
+        private void drawAttackMiniGameCoins(Canvas canvas) {
+            try {
+                for (StaticImage coin : attackCoins) {
+                    coin.draw(canvas);
+                }
+            } catch (ConcurrentModificationException ignored) {}
+        }
+
+        private void drawDefenseMiniGameCoins(Canvas canvas) {
+            try {
+                for (StaticImage coin : defenseCoins) {
+                    coin.draw(canvas);
+                }
+            } catch (ConcurrentModificationException ignored) {}
+        }
+
+        private void spawnAttackMiniGameCoin() {
+            attackMiniGameCoinsSpawned++;
+            StaticImage coin = attackMiniGame.clone();
+            coin.setDefaultX(unitOfLength / 2 + (int) (Math.random() * (screenWidth - unitOfLength)));
+            coin.setDefaultY(unitOfLength / 2 + (int) (Math.random() * (screenHeight - unitOfLength)));
+            attackCoins.add(coin);
+        }
+
+        private void spawnDefenseMiniGameCoin() {
+            defenseMiniGameCoinsSpawned++;
+            StaticImage coin = defenseMiniGame.clone();
+            coin.setDefaultX(unitOfLength / 2 + (int) (Math.random() * (screenWidth - unitOfLength)));
+            coin.setDefaultY(unitOfLength / 2 + (int) (Math.random() * (screenHeight - unitOfLength)));
+            defenseCoins.add(coin);
+        }
+
         private void timeCount() {
             int diff = (int) (System.currentTimeMillis() - currentTime);
             runTime += diff;
             if (isAttackMiniGame) attackMiniGameTime += diff;
+            if (isDefenseMiniGame) defenseMiniGameTime += diff;
             currentTime = System.currentTimeMillis();
             if (((int) (runTime / 1000)) > seconds) {
                 seconds++;
                 if (seconds % 3 == 0 && game.unit.getManaPercentage() < 1)
                     game.unit.changeMana(1);
+            }
+            if (dmg < 0 && !isDefenseMiniGame) {
+                isDefenseMiniGame = true;
+                dmg = 0;
+                defenseMiniGameTime = 0;
+                defenseMiniGameCoinsSpawned = 0;
+                dmgMultiplier = 1;
             }
         }
 
@@ -609,7 +674,6 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
 
 
 // TODO: сделать базу данных
-// TODO: сделать мини игры, связанные с защитой
 // TODO: сделать раунд игры конечной
 /* TODO:
 Бегло посмотрел проект.

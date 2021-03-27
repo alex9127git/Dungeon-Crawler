@@ -42,13 +42,15 @@ public class GameLogic {
         }
     }
 
-    public void enemyAI() {
+    public int enemyAI() {
+        int hurt = 0;
         for (Enemy e : terrain.getEnemies()) {
             e.decide(unit, terrain);
             if (Pathfinder.distance(unit.getX(), unit.getY(), e.getX(), e.getY()) == 0 && e.alive()) {
                 int dmg = -1 * (e.getAttackPower() - unit.getDefensePower());
-                unit.changeHp(Math.min(dmg, 0));
+                hurt += Math.min(dmg, 0);
             }
         }
+        return hurt;
     }
 }
