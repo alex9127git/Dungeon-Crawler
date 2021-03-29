@@ -1,8 +1,5 @@
 package ru.alex9127.app.terrain;
 
-import java.util.ArrayList;
-
-import ru.alex9127.app.drawing.StaticImage;
 import ru.alex9127.app.interfaces.TerrainLike;
 
 public class Dungeon {
@@ -10,7 +7,7 @@ public class Dungeon {
     public TerrainLike currentTerrain;
 
     public Dungeon(TerrainLike t) {
-        tree = new Tree<>(null, t);
+        tree = new Tree<>(t);
         setCurrentTerrain(t);
     }
 
