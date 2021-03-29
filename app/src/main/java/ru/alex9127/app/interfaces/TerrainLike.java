@@ -8,7 +8,7 @@ import ru.alex9127.app.terrain.Terrain;
 public interface TerrainLike {
     void createTerrain();
     Terrain.Point getSpawnPoint();
-    Terrain.Point getPortalPoint();
+    Terrain.Point getPortalPoint(int x, int y);
     int getSize();
     boolean getBlockWalkable(int x, int y);
     String getBlockMaterial(int x, int y);
@@ -22,4 +22,6 @@ public interface TerrainLike {
     void revealBlock(int x, int y);
     ArrayList<Enemy> getEnemies();
     void generateEnemies();
+    void setLastPortal(int lastPortal);
+    Terrain.Point getLastPortal();
 }

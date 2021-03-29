@@ -15,13 +15,13 @@ public class Terrain implements TerrainLike {
     private final Block[][] terrain;
     private final int size;
     private final Room[][] rooms;
-    public int spawnX;
-    public int spawnY;
-    public int portalX;
-    public int portalY;
-    public final Trap[] traps;
+    private int spawnX;
+    private int spawnY;
+    private final ArrayList<Point> portals = new ArrayList<>();
+    private final Trap[] traps;
     public final ArrayList<Enemy> enemies = new ArrayList<>();
     public final int level;
+    private int lastPortal;
 
     public Terrain(int size, int level, Unit unit) {
         this.size = size;
@@ -54,31 +54,28 @@ public class Terrain implements TerrainLike {
                 int enemyY = (int) (Math.random() * 128);
                 if (getBlockWalkable(enemyX, enemyY)) {
                     Enemy e;
-                    if (level % 6 != 0) {
-                        if (level < 1) {
-                            e = EnemyGenerator.getEnemy("GREEN SLIME", level, 20, 10,
-                                    4, 2, 2, 1, 30,
-                                    20, enemyX, enemyY);
+                    if (level % 5 != 0) {
+                        if (level < 3) {
+                            e = EnemyGenerator.getGreenSlime(level, enemyX, enemyY);
 
-                        } else if (level < 6) {
-                            if (new Random().nextInt(2) == 1) {
-                                e = EnemyGenerator.getEnemy("BLUE SLIME", level, 15, 5,
-                                        3, 1, 1, 1, 50,
-                                        30, enemyX, enemyY);
+                        } else if (level < 4) {
+                            if (new Random().nextInt(3) == 2) {
+                                e = EnemyGenerator.getBlueSlime(level, enemyX, enemyY);
                             } else {
-                                e = EnemyGenerator.getEnemy("GREEN SLIME", level, 20, 10,
-                                        4, 2, 2, 1, 30,
-                                        20, enemyX, enemyY);
+                                e = EnemyGenerator.getGreenSlime(level, enemyX, enemyY);
                             }
                         } else {
-                            e = EnemyGenerator.getEnemy("ZOMBIE", level, 50, 30,
-                                    10, 5, 5, 3, 70,
-                                    50, enemyX, enemyY);
+                            if (new Random().nextInt(5) < 2) {
+                                e = EnemyGenerator.getGreenSlime(level, enemyX, enemyY);
+                            } else if (new Random().nextInt(5) < 4) {
+                                e = EnemyGenerator.getBlueSlime(level, enemyX, enemyY);
+
+                            } else {
+                                e = EnemyGenerator.getZombie(level, enemyX, enemyY);
+                            }
                         }
                     } else {
-                        e = EnemyGenerator.getEnemy("KING SLIME", level, 1000, 500,
-                                20, 10, 0, 1, 1000,
-                                500, enemyX, enemyY);
+                        e = EnemyGenerator.getKingSlime(level, enemyX, enemyY);
                     }
                     enemies.add(e);
                     addBlockEntity(enemyX, enemyY, e);
@@ -127,7 +124,7 @@ public class Terrain implements TerrainLike {
         generateRooms(4, 4, size / 8 ,size / 8 * 6);
         generatePaths();
         generateSpawn();
-        generatePortal();
+        generatePortals();
         generateChests();
         generateTraps();
         generateEnemies();
@@ -153,24 +150,27 @@ public class Terrain implements TerrainLike {
         do {
             spawnX = generateRandom(0, 128);
             spawnY = generateRandom(0, 128);
-            if (getBlockWalkable(spawnX, spawnY)) spawnPlaced = true;
+            if (getBlockWalkable(spawnX, spawnY) && getBlockWalkable(spawnX + 1, spawnY)) spawnPlaced = true;
         } while (!spawnPlaced);
         setBlockConfig(spawnX, spawnY, "spawn");
         this.spawnX = spawnX;
         this.spawnY = spawnY;
     }
 
-    private void generatePortal() {
+    private void generatePortals() {
         int portalX, portalY;
-        boolean portalPlaced = false;
-        do {
-            portalX = generateRandom(0, 128);
-            portalY = generateRandom(0, 128);
-            if (getBlockWalkable(portalX, portalY)) portalPlaced = true;
-        } while (!portalPlaced);
-        setBlockConfig(portalX, portalY, "portal");
-        this.portalX = portalX;
-        this.portalY = portalY;
+        int numberOfPortals = generateRandom(2, 3);
+        for (int i = 0; i < numberOfPortals; i++) {
+            boolean portalPlaced = false;
+            do {
+                portalX = generateRandom(0, 128);
+                portalY = generateRandom(0, 128);
+                if (getBlockWalkable(portalX, portalY) && getBlockWalkable(portalX - 1, portalY) && getPortalPoint(portalX, portalY) == null)
+                    portalPlaced = true;
+            } while (!portalPlaced);
+            setBlockConfig(portalX, portalY, "portal" + i);
+            portals.add(new Point(portalX, portalY));
+        }
     }
 
     private void generatePaths() {
@@ -273,8 +273,13 @@ public class Terrain implements TerrainLike {
         return new Point(spawnX, spawnY);
     }
 
-    public Point getPortalPoint() {
-        return new Point(portalX, portalY);
+    public Point getPortalPoint(int x, int y) {
+        for (Point p:portals) {
+            if (p.getX() == x && p.getY() == y) {
+                return p;
+            }
+        }
+        return null;
     }
 
     public boolean getBlockWalkable(int x, int y) {
@@ -354,5 +359,13 @@ public class Terrain implements TerrainLike {
             }
         }
         return null;
+    }
+
+    public void setLastPortal(int lastPortal) {
+        this.lastPortal = lastPortal;
+    }
+
+    public Terrain.Point getLastPortal() {
+        return portals.get(lastPortal);
     }
 }

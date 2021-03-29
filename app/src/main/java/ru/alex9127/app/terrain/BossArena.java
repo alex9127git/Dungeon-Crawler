@@ -13,10 +13,10 @@ public class BossArena implements TerrainLike {
     private final int size;
     public int spawnX;
     public int spawnY;
-    public int portalX;
-    public int portalY;
+    private final ArrayList<Terrain.Point> portals = new ArrayList<>();
     public final ArrayList<Enemy> enemies = new ArrayList<>();
     public final int level;
+    private int lastPortal;
 
     public BossArena(int size, int level, Unit unit) {
         this.size = size;
@@ -30,9 +30,9 @@ public class BossArena implements TerrainLike {
         createWalls();
         createArena();
         spawnX = spawnY = size / 4;
-        portalX = portalY = size / 4 * 3;
+        portals.add(new Terrain.Point(size / 4 * 3, size / 4 * 3));
         setBlockConfig(spawnX, spawnY, "spawn");
-        setBlockConfig(portalX, portalY, "portal");
+        setBlockConfig(portals.get(0).getX(), portals.get(0).getY(), "portal0");
     }
 
     public void generateEnemies() {
@@ -73,8 +73,13 @@ public class BossArena implements TerrainLike {
         return new Terrain.Point(spawnX, spawnY);
     }
 
-    public Terrain.Point getPortalPoint() {
-        return new Terrain.Point(portalX, portalY);
+    public Terrain.Point getPortalPoint(int x, int y) {
+        for (Terrain.Point p:portals) {
+            if (p.getX() == x && p.getY() == y) {
+                return p;
+            }
+        }
+        return null;
     }
 
     private void createWalls() {
@@ -140,5 +145,13 @@ public class BossArena implements TerrainLike {
     @Override
     public ArrayList<Enemy> getEnemies() {
         return enemies;
+    }
+
+    public void setLastPortal(int lastPortal) {
+        this.lastPortal = lastPortal;
+    }
+
+    public Terrain.Point getLastPortal() {
+        return portals.get(lastPortal);
     }
 }
