@@ -2,12 +2,15 @@ package ru.alex9127.app.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.*;
+import android.widget.FrameLayout;
 
 import ru.alex9127.app.R;
 import ru.alex9127.app.drawing.DrawSurface;
 
 public class GameActivity extends AppCompatActivity implements View.OnTouchListener {
+    FrameLayout frameLayout;
     DrawSurface drawSurface;
 
     @Override
@@ -16,14 +19,11 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         String name = getIntent().getStringExtra("Name");
         if (name.isEmpty()) name = "UNKNOWN";
-        drawSurface = new DrawSurface(this, name);
-        setContentView(drawSurface);
-        drawSurface.setOnTouchListener(this);
-        /*
         setContentView(R.layout.activity_game);
-        drawSurface = findViewById(R.id.drawSurface);
+        frameLayout = findViewById(R.id.frameLayout);
+        drawSurface = new DrawSurface(this, name);
+        frameLayout.addView(drawSurface);
         drawSurface.setOnTouchListener(this);
-        */
     }
 
     @Override

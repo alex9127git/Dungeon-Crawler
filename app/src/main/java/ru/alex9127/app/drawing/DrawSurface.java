@@ -167,7 +167,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                 game.unit.changeMana(-1);
                 for (Enemy e : game.dungeon.currentTerrain.getEnemies()) {
                     if (Pathfinder.distance(e.getX(), e.getY(), blockX, blockY) < 2)
-                        e.changeHp(-1 * (game.unit.getAttackPower() - e.getDefensePower()));
+                        e.changeHp(-1 * (game.unit.getAttackPower() - e.getDefensePower()) * 3);
                 }
                 drawer.dmg = game.enemyAI();
             }
@@ -270,6 +270,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                                 game.checkUnitAlive(a);
                                 game.checkNextLevel();
                                 game.checkGoingBack();
+                                game.checkAllEnemiesKilled();
                                 animationsUpdate();
                                 textPopupsDraw(canvas);
                             } else if (isAttackMiniGame) {
@@ -371,6 +372,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                 seconds++;
                 if (seconds % 3 == 0 && game.unit.getManaPercentage() < 1)
                     game.unit.changeMana(1);
+                if (seconds % 5 == 0 && textImages.size() >= 3) textImages.clear();
             }
             if (dmg < 0 && !isDefenseMiniGame) {
                 isDefenseMiniGame = true;
@@ -461,14 +463,14 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         private void drawEnemyImage(Enemy enemy, Canvas canvas, int x, int y) {
             AnimatedImage image = null;
             switch (enemy.getName()) {
-                case "GREEN SLIME":
-                case "KING SLIME":
+                case "GreenSlime":
+                case "KingSlime":
                     image = greenSlime;
                     break;
-                case "BLUE SLIME":
+                case "BlueSlime":
                     image = blueSlime;
                     break;
-                case "ZOMBIE":
+                case "Zombie":
                     image = zombie;
                     break;
             }
@@ -480,14 +482,14 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         private boolean drawEnemyDeadImage(Enemy enemy, Canvas canvas, int x, int y) {
             AnimatedImage image = null;
             switch (enemy.getName()) {
-                case "GREEN SLIME":
-                case "KING SLIME":
+                case "GreenSlime":
+                case "KingSlime":
                     image = greenSlimeDefeated;
                     break;
-                case "BLUE SLIME":
+                case "BlueSlime":
                     image = blueSlimeDefeated;
                     break;
-                case "ZOMBIE":
+                case "Zombie":
                     image = zombieDefeated;
                     break;
             }

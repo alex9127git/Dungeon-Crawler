@@ -53,16 +53,6 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/leaderBoards"
-        android:textSize="36sp"
-        android:backgroundTint="@color/red"
-        android:layout_gravity="center"
-        android:textColor="@color/black"
-        android:onClick="leaderBoards"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:text="@string/quit"
         android:textSize="36sp"
         android:backgroundTint="@color/red"

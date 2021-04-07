@@ -2,6 +2,7 @@
   <dictionary name="EPIX">
     <words>
       <w>coords</w>
+      <w>deserialized</w>
       <w>leaderboards</w>
       <w>mana</w>
     </words>

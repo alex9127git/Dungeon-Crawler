@@ -1,6 +1,9 @@
 package ru.alex9127.app.classes;
 
-public abstract class Entity extends Thing {
+import ru.alex9127.app.exceptions.SerializationException;
+import ru.alex9127.app.interfaces.DatabaseSerializable;
+
+public abstract class Entity extends Thing implements DatabaseSerializable {
     private int hp, maxHp, atk, def, mana, maxMana;
     private final String name;
 
@@ -72,5 +75,15 @@ public abstract class Entity extends Thing {
     public void upgradeMana(int up) {
         mana += up;
         maxMana += up;
+    }
+
+    @Override
+    public String serialize() {
+        return name + " " + getX() + " " + getY() + " " + hp + " " + maxHp + " " + atk + " " + def + " " + mana + " " + maxMana;
+    }
+
+
+    public DatabaseSerializable deserialize(String serialized) throws SerializationException {
+        return null;
     }
 }

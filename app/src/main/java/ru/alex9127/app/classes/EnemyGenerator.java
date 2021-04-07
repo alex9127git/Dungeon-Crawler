@@ -15,25 +15,25 @@ public class EnemyGenerator {
     }
 
     public static Enemy getGreenSlime(int level, int enemyX, int enemyY) {
-        return EnemyGenerator.getEnemy("GREEN SLIME", level, 40, 20,
+        return EnemyGenerator.getEnemy("GreenSlime", level, 40, 20,
                 5, 3, 4, 2, 50,
                 30, enemyX, enemyY);
     }
 
     public static Enemy getBlueSlime(int level, int enemyX, int enemyY) {
-        return EnemyGenerator.getEnemy("BLUE SLIME", level, 30, 15,
+        return EnemyGenerator.getEnemy("BlueSlime", level, 30, 15,
                 4, 6, 3, 1, 70,
                 30, enemyX, enemyY);
     }
 
     public static Enemy getZombie(int level, int enemyX, int enemyY) {
-        return EnemyGenerator.getEnemy("ZOMBIE", level, 100, 50,
+        return EnemyGenerator.getEnemy("Zombie", level, 100, 50,
                 10, 10, 8, 5, 100,
                 100, enemyX, enemyY);
     }
 
     public static Enemy getKingSlime(int level, int enemyX, int enemyY) {
-        return EnemyGenerator.getEnemy("KING SLIME", level, 1000, 1000,
+        return EnemyGenerator.getEnemy("KingSlime", level, 1000, 1000,
                 20, 10, 10, 10, 1000,
                 500, enemyX, enemyY);
     }

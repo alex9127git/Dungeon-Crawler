@@ -2,11 +2,11 @@ package ru.alex9127.app.classes;
 
 import java.util.ArrayList;
 
-import ru.alex9127.app.interfaces.TerrainLike;
+import ru.alex9127.app.terrain.Terrain;
 
 public class Pathfinder {
     private static int[][] info;
-    public static int[][] findPath(TerrainLike terrain, Entity start, Entity end) {
+    public static int[][] findPath(Terrain terrain, Entity start, Entity end) {
         info = initializePathFind(terrain, start, end);
         return calculatePath(end);
     }
@@ -54,7 +54,7 @@ public class Pathfinder {
         else return new int[][] {{-1, -1}};
     }
 
-    private static int[][] initializePathFind(TerrainLike terrain, Entity start, Entity end) {
+    private static int[][] initializePathFind(Terrain terrain, Entity start, Entity end) {
         int[][] info = new int[terrain.getSize()][terrain.getSize()];
         for (int y = 0; y < info.length; y++) {
             for (int x = 0; x < info[0].length; x++) {

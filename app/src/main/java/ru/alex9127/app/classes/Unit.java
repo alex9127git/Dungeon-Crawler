@@ -1,6 +1,7 @@
 package ru.alex9127.app.classes;
 
-import ru.alex9127.app.interfaces.TerrainLike;
+import ru.alex9127.app.exceptions.SerializationException;
+import ru.alex9127.app.interfaces.DatabaseSerializable;
 import ru.alex9127.app.terrain.Terrain;
 
 public class Unit extends Entity {
@@ -20,7 +21,7 @@ public class Unit extends Entity {
         if (this.xp >= xpNeeded) {
             while (this.xp >= xpNeeded) {
                 this.xp -= xpNeeded;
-                xpNeeded *= 1.1;
+                xpNeeded *= 1.5;
                 levelUp();
             }
         }
@@ -31,16 +32,16 @@ public class Unit extends Entity {
         int r = (int) (Math.random() * 4);
         switch (r) {
             case 0:
-                upgradeHp(10);
+                upgradeHp(20);
                 break;
             case 1:
-                upgradeAtk(1);
+                upgradeAtk(3);
                 break;
             case 2:
-                upgradeDef(1);
+                upgradeDef(3);
                 break;
             case 3:
-                upgradeMana(3);
+                upgradeMana(1);
                 break;
         }
     }
@@ -57,7 +58,7 @@ public class Unit extends Entity {
         this.inventory.remove(item);
     }
 
-    public String checkMove(int dx, int dy, TerrainLike terrain) {
+    public String checkMove(int dx, int dy, Terrain terrain) {
         terrain.removeBlockEntity(getX(), getY(), this);
         if (terrain.getBlockWalkable(this.getX() + dx, this.getY() + dy)) {
             String config = terrain.getBlockConfig(this.getX() + dx, this.getY() + dy);
@@ -88,7 +89,36 @@ public class Unit extends Entity {
         return super.stats() + "\nLEVEL: " + level + "\nXP: " + xp + "/" + xpNeeded;
     }
 
-    public int getLevel() {
-        return level;
+    @Override
+    public String serialize() {
+        return super.serialize() + "," + level + "," + xp + "," + xpNeeded;
+    }
+
+    @Override
+    public DatabaseSerializable deserialize(String serialized) throws SerializationException {
+        String[] data = serialized.split(",");
+        if (data.length != 12) {
+            throw new SerializationException("Object " + getClass() + " couldn't be deserialized: needed 12 pieces of data, got " + data.length);
+        } else {
+            String name = data[0];
+            int x = Integer.parseInt(data[1]);
+            int y = Integer.parseInt(data[2]);
+            int hp = Integer.parseInt(data[3]);
+            int maxHp = Integer.parseInt(data[4]);
+            int atk = Integer.parseInt(data[5]);
+            int def = Integer.parseInt(data[6]);
+            int mana = Integer.parseInt(data[7]);
+            int maxMana = Integer.parseInt(data[8]);
+            int level = Integer.parseInt(data[9]);
+            int xp = Integer.parseInt(data[10]);
+            int xpNeeded = Integer.parseInt(data[11]);
+            Unit u = new Unit(name, maxHp, atk, def, maxMana, x, y);
+            u.level = level;
+            u.xp = xp;
+            u.xpNeeded = xpNeeded;
+            u.changeHp(-1 * (maxHp - hp));
+            u.changeMana(-1 * (maxMana - mana));
+            return u;
+        }
     }
 }

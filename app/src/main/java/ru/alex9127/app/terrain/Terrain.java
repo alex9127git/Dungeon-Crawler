@@ -9,9 +9,10 @@ import ru.alex9127.app.classes.Enemy;
 import ru.alex9127.app.classes.EnemyGenerator;
 import ru.alex9127.app.classes.Entity;
 import ru.alex9127.app.classes.Unit;
-import ru.alex9127.app.interfaces.TerrainLike;
+import ru.alex9127.app.exceptions.SerializationException;
+import ru.alex9127.app.interfaces.DatabaseSerializable;
 
-public class Terrain implements TerrainLike {
+public class Terrain implements DatabaseSerializable {
     private final Block[][] terrain;
     private final int size;
     private final Room[][] rooms;
@@ -22,15 +23,38 @@ public class Terrain implements TerrainLike {
     public final ArrayList<Enemy> enemies = new ArrayList<>();
     public final int level;
     private int lastPortal;
+    public boolean enemyRewardGotten = false;
 
-    public Terrain(int size, int level, Unit unit) {
+    public Terrain(int size, int level, Unit unit, String type) {
         this.size = size;
         this.terrain = new Block[size][size];
         this.rooms = new Room[4][4];
         this.traps = new Trap[5 + (int) (Math.random() * 5)];
         this.level = level;
-        createTerrain();
+        createTerrain(type);
         addBlockEntity(spawnX, spawnY, unit);
+    }
+
+    @Override
+    public String serialize() {
+        StringBuilder s = new StringBuilder();
+        for (Block[] row:terrain) {
+            for (Block block:row) {
+                s.append(block.serialize()).append(";");
+            }
+            s.append("\n");
+        }
+        s.append(size).append("\n");
+        s.append(level).append("\n");
+        s.append(lastPortal).append("\n");
+        s.append(spawnX).append("\n");
+        s.append(spawnY).append("\n");
+        return s.toString();
+    }
+
+    @Override
+    public DatabaseSerializable deserialize(String serialized) throws SerializationException {
+        return null;
     }
 
     static class Room {
@@ -57,7 +81,6 @@ public class Terrain implements TerrainLike {
                     if (level % 5 != 0) {
                         if (level < 3) {
                             e = EnemyGenerator.getGreenSlime(level, enemyX, enemyY);
-
                         } else if (level < 4) {
                             if (new Random().nextInt(3) == 2) {
                                 e = EnemyGenerator.getBlueSlime(level, enemyX, enemyY);
@@ -119,15 +142,34 @@ public class Terrain implements TerrainLike {
         }
     }
 
-    public void createTerrain() {
-        createWalls();
-        generateRooms(4, 4, size / 8 ,size / 8 * 6);
-        generatePaths();
-        generateSpawn();
-        generatePortals();
-        generateChests();
-        generateTraps();
-        generateEnemies();
+    public void createTerrain(String type) {
+        switch (type) {
+            case "common":
+                createWalls();
+                generateRooms(4, 4, size / 8 ,size / 8 * 6);
+                generatePaths();
+                generateSpawn();
+                generatePortals();
+                generateChests();
+                generateTraps();
+                generateEnemies();
+                break;
+            case "boss":
+                createWalls();
+                createArena();
+                spawnX = spawnY = size / 4;
+                portals.add(new Terrain.Point(size / 8 * 5 - 1, size / 8 * 5 - 1));
+                setBlockConfig(spawnX, spawnY, "spawn");
+                setBlockConfig(portals.get(0).getX(), portals.get(0).getY(), "portal0");
+        }
+    }
+
+    private void createArena() {
+        for (int y = size / 8 * 3; y < size / 8 * 5; y++) {
+            for (int x = size / 8 * 3; x < size / 8 * 5; x++) {
+                setBlockWalkable(x, y, true);
+            }
+        }
     }
 
     private void generateTraps() {
@@ -195,7 +237,9 @@ public class Terrain implements TerrainLike {
             endRow = t;
         }
         for (int y = startRow; y <= endRow; y++) {
+            setBlockWalkable(column - 1, y, true);
             setBlockWalkable(column, y, true);
+            setBlockWalkable(column + 1, y, true);
         }
     }
 
@@ -206,7 +250,9 @@ public class Terrain implements TerrainLike {
             endColumn = t;
         }
         for (int x = startColumn; x <= endColumn; x++) {
+            setBlockWalkable(x, row - 1, true);
             setBlockWalkable(x, row, true);
+            setBlockWalkable(x, row + 1, true);
         }
     }
 
@@ -250,8 +296,10 @@ public class Terrain implements TerrainLike {
         }
         for (int y = centerY - height - 3; y <= centerY + height + 3; y++) {
             for (int x = centerX - width - 3; x <= centerX + width + 3; x++) {
-                setBlockWalkable(x, y, y >= centerY - height && y <= centerY + height &&
-                        x >= centerX - width && x <= centerX + width);
+                if (!getBlockWalkable(x, y)) {
+                    setBlockWalkable(x, y, y >= centerY - height && y <= centerY + height &&
+                            x >= centerX - width && x <= centerX + width);
+                }
                 setBlockMaterial(x, y, material);
             }
         }
@@ -339,7 +387,6 @@ public class Terrain implements TerrainLike {
         return size;
     }
 
-    @Override
     public ArrayList<Enemy> getEnemies() {
         return enemies;
     }
@@ -367,5 +414,9 @@ public class Terrain implements TerrainLike {
 
     public Terrain.Point getLastPortal() {
         return portals.get(lastPortal);
+    }
+
+    public Block getBlock(int x, int y) {
+        return terrain[y][x];
     }
 }
