@@ -73,8 +73,8 @@ public class Unit extends Entity {
                     return "def";
                 }
             }
-            if (config.equals("spikes") && terrain instanceof Terrain) {
-                ((Terrain) terrain).revealTrap(getX(), getY());
+            if (config.equals("spikes")) {
+                terrain.revealTrap(getX(), getY());
                 changeHp(-10);
                 return "moved onto trap";
             }

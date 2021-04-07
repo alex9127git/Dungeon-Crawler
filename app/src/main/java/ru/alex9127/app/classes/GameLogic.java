@@ -11,7 +11,7 @@ public class GameLogic {
     public final Unit unit;
     public int level;
     public int floor;
-    public Dungeon dungeon;
+    public final Dungeon dungeon;
     public String path = "";
 
     public GameLogic(String name) {

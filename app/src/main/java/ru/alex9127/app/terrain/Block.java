@@ -18,7 +18,7 @@ public class Block implements Locatable, DatabaseSerializable {
     private String material;
     private String config;
     private boolean isShown;
-    private ArrayList<Entity> entities;
+    private final ArrayList<Entity> entities;
 
     public Block(int x, int y, boolean isWalkable, String material, String config) {
         setX(x);
@@ -66,10 +66,6 @@ public class Block implements Locatable, DatabaseSerializable {
     @NonNull
     public String getConfig() {
         return config;
-    }
-
-    public ArrayList<Entity> getEntities() {
-        return entities;
     }
 
     public void setWalkable(boolean walkable) {

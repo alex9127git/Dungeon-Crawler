@@ -58,8 +58,8 @@ public class Terrain implements DatabaseSerializable {
     }
 
     static class Room {
-        int centerX;
-        int centerY;
+        final int centerX;
+        final int centerY;
 
         public Room(int centerX, int centerY) {
             this.centerX = centerX;
@@ -109,8 +109,8 @@ public class Terrain implements DatabaseSerializable {
     }
 
     public static class Point {
-        int x;
-        int y;
+        final int x;
+        final int y;
 
         public Point(int x, int y) {
             this.x = x;
@@ -127,8 +127,8 @@ public class Terrain implements DatabaseSerializable {
     }
 
     public static class Trap {
-        int x;
-        int y;
+        final int x;
+        final int y;
         boolean isRevealed;
 
         public Trap(int x, int y) {
@@ -416,7 +416,4 @@ public class Terrain implements DatabaseSerializable {
         return portals.get(lastPortal);
     }
 
-    public Block getBlock(int x, int y) {
-        return terrain[y][x];
-    }
 }

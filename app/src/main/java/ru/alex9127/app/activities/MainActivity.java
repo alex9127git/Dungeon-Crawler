@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.*;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.*;
 
@@ -37,9 +36,11 @@ public class MainActivity extends AppCompatActivity {
                 for (TerrainDataBase.Item item:items) {
                     s.append(item.toString());
                 }
+                /*
                 Intent i = new Intent(MainActivity.this, LeaderboardsActivity.class);
                 i.putExtra("Text", s.toString());
                 startActivityForResult(i, 1);
+                */
             }
         }
         //new GetData().execute();

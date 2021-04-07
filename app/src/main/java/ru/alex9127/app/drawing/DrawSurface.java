@@ -175,11 +175,6 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     @Override
-    public boolean performClick() {
-        return super.performClick();
-    }
-
-    @Override
     public void surfaceCreated(@NonNull SurfaceHolder holder) {
         drawer = new DrawThread(getHolder());
         drawer.start();
@@ -553,14 +548,15 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                     config = spawn;
                     break;
                 case "spikes":
-                    if (game.dungeon.currentTerrain instanceof Terrain && ((Terrain) game.dungeon.currentTerrain).getTrap(x, y).isNotRevealed()) {
+                    if (game.dungeon.currentTerrain != null && game.dungeon.currentTerrain.getTrap(x, y).isNotRevealed()) {
                         config = null;
                     } else {
                         config = spikesStatic;
                     }
                     break;
             }
-            if (game.dungeon.currentTerrain.getBlockConfig(x, y).startsWith("portal")) config = portal;
+            if (game.dungeon.currentTerrain != null && game.dungeon.currentTerrain.getBlockConfig(x, y).startsWith("portal"))
+                config = portal;
             return new Images(base, config);
         }
 
@@ -635,15 +631,15 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                             p = gold;
                             break;
                         case "spikes":
-                            if (game.dungeon.currentTerrain instanceof Terrain &&
-                                    ((Terrain) game.dungeon.currentTerrain).getTrap(x, y).isNotRevealed()) {
+                            if (game.dungeon.currentTerrain != null &&
+                                    game.dungeon.currentTerrain.getTrap(x, y).isNotRevealed()) {
                                 p = floor;
                             } else {
                                 p = white;
                             }
                             break;
                     }
-                    if (game.dungeon.currentTerrain.getBlockConfig(x, y).startsWith("portal")) {
+                    if (game.dungeon.currentTerrain != null && game.dungeon.currentTerrain.getBlockConfig(x, y).startsWith("portal")) {
                         p = purple;
                     }
                 } catch (ArrayIndexOutOfBoundsException e) {

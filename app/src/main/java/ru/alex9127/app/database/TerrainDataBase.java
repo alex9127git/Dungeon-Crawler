@@ -44,9 +44,9 @@ public class TerrainDataBase {
     }
 
     public static class Item {
-        long id;
-        String terrainData;
-        int terrainPath;
+        final long id;
+        final String terrainData;
+        final int terrainPath;
 
         Item(long id, String t, int p) {
             this.id = id;

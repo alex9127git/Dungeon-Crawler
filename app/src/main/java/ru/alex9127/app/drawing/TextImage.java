@@ -1,7 +1,6 @@
 package ru.alex9127.app.drawing;
 
 import android.graphics.*;
-import android.util.Log;
 
 public class TextImage extends Image {
     private String text;
