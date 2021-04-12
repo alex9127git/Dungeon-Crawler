@@ -9,10 +9,8 @@ import ru.alex9127.app.classes.Enemy;
 import ru.alex9127.app.classes.EnemyGenerator;
 import ru.alex9127.app.classes.Entity;
 import ru.alex9127.app.classes.Unit;
-import ru.alex9127.app.exceptions.SerializationException;
-import ru.alex9127.app.interfaces.DatabaseSerializable;
 
-public class Terrain implements DatabaseSerializable {
+public class Terrain {
     private final Block[][] terrain;
     private final int size;
     private final Room[][] rooms;
@@ -33,28 +31,6 @@ public class Terrain implements DatabaseSerializable {
         this.level = level;
         createTerrain(type);
         addBlockEntity(spawnX, spawnY, unit);
-    }
-
-    @Override
-    public String serialize() {
-        StringBuilder s = new StringBuilder();
-        for (Block[] row:terrain) {
-            for (Block block:row) {
-                s.append(block.serialize()).append(";");
-            }
-            s.append("\n");
-        }
-        s.append(size).append("\n");
-        s.append(level).append("\n");
-        s.append(lastPortal).append("\n");
-        s.append(spawnX).append("\n");
-        s.append(spawnY).append("\n");
-        return s.toString();
-    }
-
-    @Override
-    public DatabaseSerializable deserialize(String serialized) throws SerializationException {
-        return null;
     }
 
     static class Room {
