@@ -12,20 +12,25 @@ import java.util.ConcurrentModificationException;
 
 import ru.alex9127.app.R;
 import ru.alex9127.app.classes.*;
+import ru.alex9127.app.saving.Save;
 import ru.alex9127.app.terrain.Terrain;
 
 import static ru.alex9127.app.drawing.ImageManager.*;
 
 @SuppressLint("ViewConstructor")
 public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
-    private final GameLogic game;
+    public final GameLogic game;
     private int xStart, yStart, yBlocks;
     public DrawThread drawer;
     private final Activity a;
 
-    public DrawSurface(Context context, String name) {
+    public DrawSurface(Context context, String name, Save save) {
         super(context);
-        game = new GameLogic(name);
+        if (save != null) {
+            game = new GameLogic(save);
+        } else {
+            game = new GameLogic(name);
+        }
         a = (Activity) context;
         getHolder().addCallback(this);
     }
@@ -76,22 +81,22 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
             if (!drawer.isAttackMiniGame && !drawer.isDefenseMiniGame) {
                 if (!drawer.paused) {
                     if (buttonDown.getBoundaryRect().contains(x, y)) {
-                        s = game.unit.checkMove(0, 1, game.dungeon.currentTerrain);
+                        s = game.unit.checkMove(0, 1, game.getTerrain());
                     }
                     if (buttonUp.getBoundaryRect().contains(x, y)) {
-                        s = game.unit.checkMove(0, -1, game.dungeon.currentTerrain);
+                        s = game.unit.checkMove(0, -1, game.getTerrain());
                     }
                     if (buttonLeft.getBoundaryRect().contains(x, y)) {
-                        s = game.unit.checkMove(-1, 0, game.dungeon.currentTerrain);
+                        s = game.unit.checkMove(-1, 0, game.getTerrain());
                     }
                     if (buttonRight.getBoundaryRect().contains(x, y)) {
-                        s = game.unit.checkMove(1, 0, game.dungeon.currentTerrain);
+                        s = game.unit.checkMove(1, 0, game.getTerrain());
                     }
                     if (buttonMiniMap.getBoundaryRect().contains(x, y)) {
                         drawer.miniMapOpened = !drawer.miniMapOpened;
                     }
                     if (buttonAttack.getBoundaryRect().contains(x, y)) {
-                        for (Enemy e : game.dungeon.currentTerrain.getEnemies()) {
+                        for (Enemy e : game.getTerrain().getEnemies()) {
                             if (Pathfinder.distance(game.unit.getX(), game.unit.getY(), e.getX(), e.getY()) <= 2.0) {
                                 drawer.attackedEnemies.add(e);
                             }
@@ -121,8 +126,8 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                     if (s.startsWith("moved")) {
                         drawer.dmg = game.enemyAI();
                     }
-                    if (game.dungeon.currentTerrain.getBlockConfig(game.unit.getX(), game.unit.getY()).equals("chest")) {
-                        game.dungeon.currentTerrain.setBlockConfig(game.unit.getX(), game.unit.getY(), "none");
+                    if (game.getTerrain().getBlockConfig(game.unit.getX(), game.unit.getY()).equals("chest")) {
+                        game.getTerrain().setBlockConfig(game.unit.getX(), game.unit.getY(), "none");
                         String str = "";
                         if (s.equals("atk")) {
                             str = "Found better weapon";
@@ -165,7 +170,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                 blockX += Math.round((double) x / unitOfLength);
                 blockY += Math.round((double) (y - yStart) / unitOfLength);
                 game.unit.changeMana(-1);
-                for (Enemy e : game.dungeon.currentTerrain.getEnemies()) {
+                for (Enemy e : game.getTerrain().getEnemies()) {
                     if (Pathfinder.distance(e.getX(), e.getY(), blockX, blockY) < 2)
                         e.changeHp(-1 * (game.unit.getAttackPower() - e.getDefensePower()) * 3);
                 }
@@ -195,6 +200,10 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                 retry = false;
             } catch (InterruptedException ignored) {}
         }
+    }
+
+    public Save save() {
+        return new Save(game);
     }
 
     private class DrawThread extends Thread {
@@ -403,7 +412,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
             for (int y = game.unit.getY() - (int) Math.floor(yBlocks / 2.0);
                  y <= game.unit.getY() + (int) Math.floor(yBlocks / 2.0); y++) {
                 for (int x = game.unit.getX() - 4; x <= game.unit.getX() + 4; x++) {
-                    game.dungeon.currentTerrain.revealBlock(x, y);
+                    game.getTerrain().revealBlock(x, y);
                     Images images = getCorrespondingImages(x, y);
                     ((DefaultImage) images.getBase()).draw(canvas, drawX, drawY);
                     if (images.getConfig() != null) {
@@ -428,7 +437,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
 
         private void drawAndUpdateEnemies(Canvas canvas, int drawX, int drawY, int y, int x) {
             ArrayList<Integer> deadEnemies = new ArrayList<>();
-            for (Enemy e:game.dungeon.currentTerrain.getEnemies()) {
+            for (Enemy e:game.getTerrain().getEnemies()) {
                 if (x == e.getX() && y == e.getY()) {
                     if (e.alive()) {
                         drawEnemyImage(e, canvas, drawX, drawY);
@@ -439,15 +448,15 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                                 red, e.getHpPercentage());
                     } else {
                         if (drawEnemyDeadImage(e, canvas, drawX, drawY))
-                            deadEnemies.add(game.dungeon.currentTerrain.getEnemies().indexOf(e));
+                            deadEnemies.add(game.getTerrain().getEnemies().indexOf(e));
                     }
                 }
             }
             for (int i = deadEnemies.size() - 1; i >= 0; i--) {
-                Enemy e = game.dungeon.currentTerrain.getEnemies().get(deadEnemies.get(i));
+                Enemy e = game.getTerrain().getEnemies().get(deadEnemies.get(i));
                 game.unit.addXp(e.getXpReward());
-                game.dungeon.currentTerrain.getEnemies().remove(e);
-                game.dungeon.currentTerrain.removeBlockEntity(x, y, e);
+                game.getTerrain().getEnemies().remove(e);
+                game.getTerrain().removeBlockEntity(x, y, e);
                 text.rewind();
                 TextImage t = text.clone();
                 t.setText("+" + e.getXpReward() + " XP");
@@ -520,8 +529,8 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         private Images getCorrespondingImages(int x, int y) {
             Image base = null;
             Image config = null;
-            boolean walkable = game.dungeon.currentTerrain.getBlockWalkable(x, y);
-            switch (game.dungeon.currentTerrain.getBlockMaterial(x, y)) {
+            boolean walkable = game.getTerrain().getBlockWalkable(x, y);
+            switch (game.getTerrain().getBlockMaterial(x, y)) {
                 case "stone":
                     if (walkable) {
                         base = stoneFloor;
@@ -537,7 +546,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                     }
                     break;
             }
-            switch (game.dungeon.currentTerrain.getBlockConfig(x, y)) {
+            switch (game.getTerrain().getBlockConfig(x, y)) {
                 case "none":
                     config = null;
                     break;
@@ -548,14 +557,14 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                     config = spawn;
                     break;
                 case "spikes":
-                    if (game.dungeon.currentTerrain != null && game.dungeon.currentTerrain.getTrap(x, y).isNotRevealed()) {
+                    if (game.getTerrain() != null && game.getTerrain().getTrap(x, y).isNotRevealed()) {
                         config = null;
                     } else {
                         config = spikesStatic;
                     }
                     break;
             }
-            if (game.dungeon.currentTerrain != null && game.dungeon.currentTerrain.getBlockConfig(x, y).startsWith("portal"))
+            if (game.getTerrain() != null && game.getTerrain().getBlockConfig(x, y).startsWith("portal"))
                 config = portal;
             return new Images(base, config);
         }
@@ -583,13 +592,13 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                 float left = (float) (unitOfLength);
                 float top = (float) (yStart + unitOfLength * (yBlocks / 2.0 - 3.5));
                 float side = (float) (unitOfLength * 7) /
-                        (compactMode ? 35 : game.dungeon.currentTerrain.getSize());
+                        (compactMode ? 35 : game.getTerrain().getSize());
                 float drawX = left;
                 float drawY = top;
                 for (int y = compactMode ? game.unit.getY() - 17 : 0;
-                     y < (compactMode ? game.unit.getY() + 18 : game.dungeon.currentTerrain.getSize()); y++) {
+                     y < (compactMode ? game.unit.getY() + 18 : game.getTerrain().getSize()); y++) {
                     for (int x = compactMode ? game.unit.getX() - 17 : 0;
-                         x < (compactMode ? game.unit.getX() + 18 : game.dungeon.currentTerrain.getSize()); x++) {
+                         x < (compactMode ? game.unit.getX() + 18 : game.getTerrain().getSize()); x++) {
                         p = chooseCorrespondingColor(x, y);
                         canvas.drawRect(drawX, drawY, drawX + side, drawY + side, p);
                         drawX += side;
@@ -603,10 +612,10 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
         private Paint chooseCorrespondingColor(int x, int y) {
             Paint p = null;
             Paint floor = null;
-            if (game.dungeon.currentTerrain.isBlockRevealed(x, y)) {
+            if (game.getTerrain().isBlockRevealed(x, y)) {
                 try {
-                    boolean walkable = game.dungeon.currentTerrain.getBlockWalkable(x, y);
-                    switch (game.dungeon.currentTerrain.getBlockMaterial(x, y)) {
+                    boolean walkable = game.getTerrain().getBlockWalkable(x, y);
+                    switch (game.getTerrain().getBlockMaterial(x, y)) {
                         case "stone":
                             if (walkable) {
                                 floor = lightGray;
@@ -622,7 +631,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                             }
                             break;
                     }
-                    switch (game.dungeon.currentTerrain.getBlockConfig(x, y)) {
+                    switch (game.getTerrain().getBlockConfig(x, y)) {
                         case "none":
                         case "spawn":
                             p = floor;
@@ -631,15 +640,15 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                             p = gold;
                             break;
                         case "spikes":
-                            if (game.dungeon.currentTerrain != null &&
-                                    game.dungeon.currentTerrain.getTrap(x, y).isNotRevealed()) {
+                            if (game.getTerrain() != null &&
+                                    game.getTerrain().getTrap(x, y).isNotRevealed()) {
                                 p = floor;
                             } else {
                                 p = white;
                             }
                             break;
                     }
-                    if (game.dungeon.currentTerrain != null && game.dungeon.currentTerrain.getBlockConfig(x, y).startsWith("portal")) {
+                    if (game.getTerrain() != null && game.getTerrain().getBlockConfig(x, y).startsWith("portal")) {
                         p = purple;
                     }
                 } catch (ArrayIndexOutOfBoundsException e) {
@@ -649,7 +658,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                     if (game.unit.getX() == x && game.unit.getY() == y) {
                         p = green;
                     }
-                    for (Enemy e : game.dungeon.currentTerrain.getEnemies()) {
+                    for (Enemy e : game.getTerrain().getEnemies()) {
                         if (x == e.getX() && y == e.getY()) {
                             p = red;
                             break;
@@ -673,6 +682,11 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
 
 // TODO: сделать базу данных
 // TODO: сделать раунд игры конечной
+// TODO: добавить валюту
+// TODO: добавить награду за общее время в игре
+// TODO: добавить улучшения
+// TODO: добавить возрождения
+// TODO: сделать хранение сейва в Json'е более эффективным
 /* TODO:
 Бегло посмотрел проект.
 Надо поработать над БД. Запрос данных должен происходить в отдельном потоке. Вывод в виде текста -- скучно. Использовать глобальную переменную -- решение не из лучших.

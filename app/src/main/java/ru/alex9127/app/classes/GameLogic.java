@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.content.Intent;
 import android.util.Log;
 
+import ru.alex9127.app.saving.CompactTerrain;
+import ru.alex9127.app.saving.Save;
 import ru.alex9127.app.terrain.Dungeon;
 import ru.alex9127.app.terrain.Terrain;
 
 public class GameLogic {
-    public final Unit unit;
+    public Unit unit;
     public int level;
     public int floor;
     public final Dungeon dungeon;
@@ -17,24 +19,30 @@ public class GameLogic {
     public GameLogic(String name) {
         level = 1;
         floor = 1;
-        Terrain terrain = new Terrain(128, level, null, "common");
-        this.unit = new Unit(name, 100, 10, 0, 5,
-                terrain.getSpawnPoint().getX() + 1, terrain.getSpawnPoint().getY());
-        terrain.addBlockEntity(unit.getX(), unit.getY(), unit);
+        Terrain terrain = new Terrain(128, level, name, 100, 10, 0, 5, "common");
+        unit = terrain.getUnit();
         dungeon = new Dungeon(terrain);
     }
 
+    public GameLogic(Save save) {
+        level = save.level;
+        floor = save.floor;
+        unit = save.unit;
+        dungeon = new Dungeon(save.dungeon);
+        path = save.path;
+    }
+
     public void checkNextLevel() {
-        if (dungeon.currentTerrain.getPortalPoint(unit.getX(), unit.getY()) != null
-                /*&& dungeon.currentTerrain.getEnemies().isEmpty()*/) {
+        if (getTerrain().getPortalPoint(unit.getX(), unit.getY()) != null
+                /*&& getTerrain().getEnemies().isEmpty()*/) {
             char c;
             floor++;
             if (floor > 5) {
                 floor = 1;
                 path = "";
             } else {
-                c = dungeon.currentTerrain.getBlockConfig(unit.getX(), unit.getY()).charAt(6);
-                dungeon.currentTerrain.setLastPortal(Integer.parseInt(String.valueOf(c)));
+                c = getTerrain().getBlockConfig(unit.getX(), unit.getY()).charAt(6);
+                getTerrain().setLastPortal(Integer.parseInt(String.valueOf(c)));
                 if (dungeon.find(path + c) == null) {
                     level++;
                     Terrain terrain;
@@ -43,25 +51,24 @@ public class GameLogic {
                     } else {
                         terrain = new Terrain(128, level, unit, "common");
                     }
+                    unit = terrain.getUnit();
                     dungeon.addByPath(path, c, terrain);
                 }
                 path += c;
             }
-            dungeon.goTo(path);
             Log.v("LOG", level + " " + floor);
-            unit.setX(dungeon.currentTerrain.getSpawnPoint().getX() + 1);
-            unit.setY(dungeon.currentTerrain.getSpawnPoint().getY());
+            unit.setX(getTerrain().getSpawnPoint().getX() + 1);
+            unit.setY(getTerrain().getSpawnPoint().getY());
         }
     }
 
     public void checkGoingBack() {
-        if (dungeon.currentTerrain.getSpawnPoint().getX() == unit.getX() &&
-                dungeon.currentTerrain.getSpawnPoint().getY() == unit.getY() && path.length() > 0) {
+        if (getTerrain().getSpawnPoint().getX() == unit.getX() &&
+                getTerrain().getSpawnPoint().getY() == unit.getY() && path.length() > 0) {
             floor--;
             path = path.substring(0, path.length() - 1);
-            dungeon.goTo(path);
-            unit.setX(dungeon.currentTerrain.getLastPortal().getX() - 1);
-            unit.setY(dungeon.currentTerrain.getLastPortal().getY());
+            unit.setX(getTerrain().getLastPortal().getX() - 1);
+            unit.setY(getTerrain().getLastPortal().getY());
         }
     }
 
@@ -75,8 +82,8 @@ public class GameLogic {
 
     public int enemyAI() {
         int hurt = 0;
-        for (Enemy e : dungeon.currentTerrain.getEnemies()) {
-            e.decide(unit, dungeon.currentTerrain);
+        for (Enemy e : getTerrain().getEnemies()) {
+            e.decide(unit, getTerrain());
             if (Pathfinder.distance(unit.getX(), unit.getY(), e.getX(), e.getY()) == 0 && e.alive()) {
                 int dmg = -1 * (e.getAttackPower() - unit.getDefensePower());
                 hurt += Math.min(dmg, 0);
@@ -86,9 +93,13 @@ public class GameLogic {
     }
 
     public void checkAllEnemiesKilled() {
-        if (dungeon.currentTerrain.enemies.isEmpty() && !dungeon.currentTerrain.enemyRewardGotten) {
-            dungeon.currentTerrain.setBlockConfig(unit.getX(), unit.getY(), "chest");
-            dungeon.currentTerrain.enemyRewardGotten = true;
+        if (getTerrain().enemies.isEmpty() && !getTerrain().enemyRewardGotten) {
+            getTerrain().setBlockConfig(unit.getX(), unit.getY(), "chest");
+            getTerrain().enemyRewardGotten = true;
         }
+    }
+
+    public Terrain getTerrain() {
+        return dungeon.find(path);
     }
 }

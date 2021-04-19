@@ -1,7 +1,8 @@
 <resources>
     <string name="app_name">Dungeon Crawler</string>
-    <string name="start">Start</string>
+    <string name="startBtn">Start new file</string>
+    <string name="continueBtn">Continue existing file</string>
     <string name="leaderBoards">Leaderboards</string>
-    <string name="quit">Quit</string>
+    <string name="quitBtn">Quit</string>
     <string name="enter_name_hint">Enter your name here</string>
 </resources>

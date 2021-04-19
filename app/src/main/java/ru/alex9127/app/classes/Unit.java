@@ -78,7 +78,7 @@ public class Unit extends Entity {
             }
             return "moved";
         }
-        terrain.removeBlockEntity(getX(), getY(), this);
+        terrain.addBlockEntity(getX(), getY(), this);
         return "notMoved";
     }
 
