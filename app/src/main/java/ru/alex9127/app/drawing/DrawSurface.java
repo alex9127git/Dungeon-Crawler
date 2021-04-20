@@ -13,7 +13,6 @@ import java.util.ConcurrentModificationException;
 import ru.alex9127.app.R;
 import ru.alex9127.app.classes.*;
 import ru.alex9127.app.saving.Save;
-import ru.alex9127.app.terrain.Terrain;
 
 import static ru.alex9127.app.drawing.ImageManager.*;
 
@@ -23,8 +22,9 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
     private int xStart, yStart, yBlocks;
     public DrawThread drawer;
     private final Activity a;
+    public double dmgPlus;
 
-    public DrawSurface(Context context, String name, Save save) {
+    public DrawSurface(Context context, String name, Save save, int time) {
         super(context);
         if (save != null) {
             game = new GameLogic(save);
@@ -32,6 +32,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
             game = new GameLogic(name);
         }
         a = (Activity) context;
+        dmgPlus = time / 6000000.0;
         getHolder().addCallback(this);
     }
 
@@ -299,7 +300,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                         } else {
                             canvas.drawColor(getResources().getColor(R.color.darkGray));
                             buttonPause.draw(canvas);
-                            drawCompoundText(game.unit.stats(), buttonPause.getBoundaryRect().left,
+                            drawCompoundText(game.unit.stats() + "\nYou also get +" + (int) (dmgPlus * 100) + "% to attack power\nbased on your time playing this game", buttonPause.getBoundaryRect().left,
                                     buttonPause.getBoundaryRect().bottom + unitOfLength, white, canvas);
                         }
                     } finally {
@@ -314,7 +315,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                 isAttackMiniGame = false;
                 attackCoins.clear();
                 for (Enemy e : drawer.attackedEnemies) {
-                    int atk = (int) ((game.unit.getAttackPower() - e.getDefensePower()) * atkMultiplier);
+                    int atk = (int) ((game.unit.getAttackPower() - e.getDefensePower()) * atkMultiplier * (1 + dmgPlus));
                     e.changeHp(-atk);
                     text.rewind();
                     TextImage t = text.clone();

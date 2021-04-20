@@ -8,18 +8,16 @@ import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
 
-public class TerrainDataBase {
-    public static final String DATABASE_NAME = "saves.db";
+public class HistoryDataBase {
+    public static final String DATABASE_NAME = "history.db";
     public static final int DATABASE_VERSION = 1;
-    public static final String TABLE_NAME = "terrain";
+    public static final String TABLE_NAME = "timeSpent";
 
     public static final String COLUMN_ID = "id";
-    public static final String COLUMN_TERRAIN_DATA = "terrainData";
-    public static final String COLUMN_TERRAIN_PATH = "terrainPath";
+    public static final String COLUMN_TIME_SPENT = "timeSpent";
 
     public static final int NUM_COLUMN_ID = 0;
-    public static final int NUM_COLUMN_TERRAIN_DATA = 1;
-    public static final int NUM_COLUMN_TERRAIN_PATH = 2;
+    public static final int NUM_COLUMN_TIME_SPENT = 1;
 
     private final SQLiteDatabase database;
 
@@ -32,8 +30,7 @@ public class TerrainDataBase {
         public void onCreate(SQLiteDatabase db) {
             String query = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    COLUMN_TERRAIN_DATA + " TEXT, " +
-                    COLUMN_TERRAIN_PATH + " TEXT);";
+                    COLUMN_TIME_SPENT + " INTEGER);";
             db.execSQL(query);
         }
 
@@ -45,31 +42,28 @@ public class TerrainDataBase {
 
     public static class Item {
         final long id;
-        final String terrainData;
-        final int terrainPath;
+        final int timeSpent;
 
-        Item(long id, String t, int p) {
+        Item(long id, int t) {
             this.id = id;
-            terrainData = t;
-            terrainPath = p;
+            timeSpent = t;
         }
 
         @NonNull
         @Override
         public String toString() {
-            return id + "|" + terrainData + "|" + terrainPath + "\n";
+            return id + "|" + timeSpent + "\n";
         }
     }
 
-    public TerrainDataBase(Context context) {
+    public HistoryDataBase(Context context) {
         DatabaseOpener opener = new DatabaseOpener(context);
         database = opener.getWritableDatabase();
     }
 
-    public long insert(String terrainData, int terrainPath) {
+    public long insert(int timeSpent) {
         ContentValues cv = new ContentValues();
-        cv.put(COLUMN_TERRAIN_DATA, terrainData);
-        cv.put(COLUMN_TERRAIN_PATH, terrainPath);
+        cv.put(COLUMN_TIME_SPENT, timeSpent);
         return database.insert(TABLE_NAME, null, cv);
     }
 
@@ -77,10 +71,9 @@ public class TerrainDataBase {
         Cursor cursor = database.query(TABLE_NAME, null, COLUMN_ID + " = ?", new String[]{String.valueOf(id)}, null, null, null);
         boolean found = cursor.moveToFirst();
         if (!found) return null;
-        String terrainData = cursor.getString(NUM_COLUMN_TERRAIN_DATA);
-        int terrainPath = cursor.getInt(NUM_COLUMN_TERRAIN_PATH);
+        int timeSpent = cursor.getInt(NUM_COLUMN_TIME_SPENT);
         cursor.close();
-        return new Item(id, terrainData, terrainPath);
+        return new Item(id, timeSpent);
     }
 
     public ArrayList<Item> selectAll() {
@@ -90,12 +83,19 @@ public class TerrainDataBase {
         if (!cursor.isAfterLast()) {
             do {
                 long id = cursor.getLong(NUM_COLUMN_ID);
-                String terrainData = cursor.getString(NUM_COLUMN_TERRAIN_DATA);
-                int terrainPath = cursor.getInt(NUM_COLUMN_TERRAIN_PATH);
-                arr.add(new Item(id, terrainData, terrainPath));
+                int timeSpent = cursor.getInt(NUM_COLUMN_TIME_SPENT);
+                arr.add(new Item(id, timeSpent));
             } while (cursor.moveToNext());
         }
         cursor.close();
         return arr;
+    }
+
+    public int sum() {
+        int sum = 0;
+        for (Item item:selectAll()) {
+            sum += item.timeSpent;
+        }
+        return sum;
     }
 }

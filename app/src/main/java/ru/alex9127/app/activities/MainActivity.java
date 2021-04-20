@@ -5,35 +5,34 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.*;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.*;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonParseException;
-
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.io.*;
 
 import ru.alex9127.app.R;
-import ru.alex9127.app.database.TerrainDataBase;
-import ru.alex9127.app.saving.Save;
+import ru.alex9127.app.database.HistoryDataBase;
 
 public class MainActivity extends AppCompatActivity {
+    public int getDataResult;
+    public static long startTime;
+    public static HistoryDataBase databaseConnector;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        databaseConnector = new HistoryDataBase(this);
     }
 
     public void startNew(View v) {
-        Intent i = new Intent(MainActivity.this, GameActivity.class);
-        i.putExtra("Name", ((EditText) findViewById(R.id.enterName)).getText().toString());
-        startActivityForResult(i, 0);
+        new GetData().execute();
+        startTime = System.currentTimeMillis();
+        Intent intent = new Intent(MainActivity.this, GameActivity.class);
+        intent.putExtra("Time", getDataResult);
+        intent.putExtra("Name", ((EditText) findViewById(R.id.enterName)).getText().toString());
+        startActivityForResult(intent, 0);
     }
 
     public void quit(View v) {
@@ -44,6 +43,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        new SaveData().execute();
+        Log.v("LOG", String.valueOf(databaseConnector.sum()));
     }
 
     public void continueExisting(View view) {
@@ -68,10 +69,30 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "File saveData.json not found",
                     Toast.LENGTH_SHORT).show();
         }
-        Gson gson = new Gson();
         Intent i = new Intent(MainActivity.this, GameActivity.class);
         i.putExtra("Name", ((EditText) findViewById(R.id.enterName)).getText().toString());
         i.putExtra("Save", contents);
+        new GetData().execute();
+        i.putExtra("Time", getDataResult);
+        startTime = System.currentTimeMillis();
         startActivityForResult(i, 0);
+    }
+
+    class GetData extends AsyncTask<Void, Integer, Integer> {
+        protected Integer doInBackground(Void... args) {
+            return databaseConnector.sum();
+        }
+
+        @Override
+        protected void onPostExecute(Integer i) {
+            getDataResult = i;
+        }
+    }
+
+    public static class SaveData extends AsyncTask<Void, Integer, Void> {
+        protected Void doInBackground(Void... args) {
+            databaseConnector.insert((int) (System.currentTimeMillis() - startTime));
+            return null;
+        }
     }
 }

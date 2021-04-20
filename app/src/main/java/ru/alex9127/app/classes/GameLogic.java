@@ -2,9 +2,8 @@ package ru.alex9127.app.classes;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.util.Log;
 
-import ru.alex9127.app.saving.CompactTerrain;
+import ru.alex9127.app.activities.GameActivity;
 import ru.alex9127.app.saving.Save;
 import ru.alex9127.app.terrain.Dungeon;
 import ru.alex9127.app.terrain.Terrain;
@@ -56,7 +55,6 @@ public class GameLogic {
                 }
                 path += c;
             }
-            Log.v("LOG", level + " " + floor);
             unit.setX(getTerrain().getSpawnPoint().getX() + 1);
             unit.setY(getTerrain().getSpawnPoint().getY());
         }

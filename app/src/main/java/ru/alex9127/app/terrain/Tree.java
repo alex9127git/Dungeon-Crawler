@@ -66,23 +66,6 @@ public class Tree<T> {
     }
 
     public static Tree<CompactTerrain> compact(Tree<Terrain> tree) {
-        /*Tree<CompactTerrain> result = new Tree<>(new CompactTerrain((Terrain) tree.getValue()));
-        HashMap<String, Terrain> entries = tree.getAllChildren();
-        entries.remove("");
-        for (Map.Entry<String, Terrain> entry : entries.entrySet()) {
-            Terrain t = (Terrain) entry.getValue();
-            String path;
-            try {
-                path = entry.getKey().substring(0, entry.getKey().length() - 1);
-            } catch (Exception e) {
-                path = "";
-            }
-            if (entry.getKey().equals("")) {
-                result.setValue(new CompactTerrain(t));
-            } else {
-                result.addByPath(path, Integer.parseInt(String.valueOf(entry.getKey().charAt(entry.getKey().length() - 1))), new CompactTerrain(t));
-            }
-        }*/
         Tree<CompactTerrain> result = new Tree<>(new CompactTerrain((Terrain) tree.getValue()));
         for (Map.Entry<Integer, Tree<Terrain>> child : tree.children.entrySet()) {
             result.addTree(child.getKey(), Tree.compact(child.getValue()));
@@ -96,23 +79,5 @@ public class Tree<T> {
             result.addTree(child.getKey(), Tree.restore(child.getValue()));
         }
         return result;
-        /*Tree<Terrain> result = new Tree<>(new Terrain((CompactTerrain) tree.getValue()));
-        HashMap<String, CompactTerrain> entries = tree.getAllChildren();
-        entries.remove("");
-        for (Map.Entry<String, CompactTerrain> entry : entries.entrySet()) {
-            CompactTerrain t = (CompactTerrain) entry.getValue();
-            String path;
-            try {
-                path = entry.getKey().substring(0, entry.getKey().length() - 1);
-            } catch (Exception e) {
-                path = "";
-            }
-            if (entry.getKey().equals("")) {
-                result.setValue(new Terrain(t));
-            } else {
-                result.addByPath(path, Integer.parseInt(String.valueOf(entry.getKey().charAt(entry.getKey().length()))), new Terrain(t));
-            }
-        }
-        return result;*/
     }
 }
