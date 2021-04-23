@@ -38,8 +38,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        new SaveData().execute();
-        Log.v("LOG", String.valueOf(databaseConnector.sum()));
+        if (data != null && data.hasExtra("Result")) {
+            switch (data.getStringExtra("Result")) {
+                case "Won":
+                    Toast.makeText(this, "You completed the game!",
+                            Toast.LENGTH_LONG).show();
+                    break;
+                case "Lost":
+                    Toast.makeText(this, "Game over",
+                            Toast.LENGTH_LONG).show();
+            }
+        } else new SaveData().execute();
     }
 
     public void continueExisting(View view) {

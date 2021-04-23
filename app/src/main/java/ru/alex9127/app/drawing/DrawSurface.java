@@ -32,7 +32,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
             game = new GameLogic(name);
         }
         a = (Activity) context;
-        dmgPlus = time / 6000000.0;
+        dmgPlus = time / 30000000.0;
         getHolder().addCallback(this);
     }
 
@@ -275,7 +275,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                                 game.checkUnitAlive(a);
                                 game.checkNextLevel();
                                 game.checkGoingBack();
-                                game.checkAllEnemiesKilled();
+                                game.checkAllEnemiesKilled(a);
                                 animationsUpdate();
                                 textPopupsDraw(canvas);
                             } else if (isAttackMiniGame) {

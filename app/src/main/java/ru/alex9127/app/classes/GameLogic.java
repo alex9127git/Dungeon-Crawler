@@ -2,9 +2,8 @@ package ru.alex9127.app.classes;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.util.Log;
+import android.widget.Toast;
 
-import ru.alex9127.app.activities.GameActivity;
 import ru.alex9127.app.saving.Save;
 import ru.alex9127.app.terrain.Dungeon;
 import ru.alex9127.app.terrain.Terrain;
@@ -15,6 +14,7 @@ public class GameLogic {
     public int floor;
     public final Dungeon dungeon;
     public String path = "";
+    public int bossesDefeated = 0;
 
     public GameLogic(String name) {
         level = 1;
@@ -75,6 +75,7 @@ public class GameLogic {
     public void checkUnitAlive(Activity a) {
         if (!unit.alive()) {
             Intent i = new Intent();
+            i.putExtra("Result", "Lost");
             a.setResult(Activity.RESULT_OK, i);
             a.finish();
         }
@@ -92,10 +93,17 @@ public class GameLogic {
         return hurt;
     }
 
-    public void checkAllEnemiesKilled() {
+    public void checkAllEnemiesKilled(Activity a) {
         if (getTerrain().enemies.isEmpty() && !getTerrain().enemyRewardGotten) {
             getTerrain().setBlockConfig(unit.getX(), unit.getY(), "chest");
             getTerrain().enemyRewardGotten = true;
+            if (getTerrain().type.equals("boss")) bossesDefeated++;
+            if (bossesDefeated > 2) {
+                Intent i = new Intent();
+                i.putExtra("Result", "Won");
+                a.setResult(Activity.RESULT_OK, i);
+                a.finish();
+            }
         }
     }
 
