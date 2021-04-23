@@ -93,7 +93,8 @@ public class HistoryDataBase {
 
     public int sum() {
         int sum = 0;
-        for (Item item:selectAll()) {
+        ArrayList<Item> items = selectAll();
+        for (Item item:items) {
             sum += item.timeSpent;
         }
         return sum;

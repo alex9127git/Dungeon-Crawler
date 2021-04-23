@@ -2,6 +2,7 @@ package ru.alex9127.app.classes;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
 
 import ru.alex9127.app.activities.GameActivity;
 import ru.alex9127.app.saving.Save;
@@ -33,7 +34,7 @@ public class GameLogic {
 
     public void checkNextLevel() {
         if (getTerrain().getPortalPoint(unit.getX(), unit.getY()) != null
-                /*&& getTerrain().getEnemies().isEmpty()*/) {
+                && (getTerrain().getEnemies().isEmpty() || getTerrain().type.equals("common"))) {
             char c;
             floor++;
             if (floor > 5) {
@@ -62,7 +63,8 @@ public class GameLogic {
 
     public void checkGoingBack() {
         if (getTerrain().getSpawnPoint().getX() == unit.getX() &&
-                getTerrain().getSpawnPoint().getY() == unit.getY() && path.length() > 0) {
+                getTerrain().getSpawnPoint().getY() == unit.getY() && path.length() > 0 &&
+                getTerrain().type.equals("common")) {
             floor--;
             path = path.substring(0, path.length() - 1);
             unit.setX(getTerrain().getLastPortal().getX() - 1);

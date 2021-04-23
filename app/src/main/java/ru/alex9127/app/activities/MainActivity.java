@@ -28,11 +28,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void startNew(View v) {
         new GetData().execute();
-        startTime = System.currentTimeMillis();
-        Intent intent = new Intent(MainActivity.this, GameActivity.class);
-        intent.putExtra("Time", getDataResult);
-        intent.putExtra("Name", ((EditText) findViewById(R.id.enterName)).getText().toString());
-        startActivityForResult(intent, 0);
     }
 
     public void quit(View v) {
@@ -48,34 +43,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void continueExisting(View view) {
-        String contents = "";
-        try {
-            FileInputStream fis = this.openFileInput("saveData.json");
-            InputStreamReader inputStreamReader = new InputStreamReader(fis);
-            StringBuilder stringBuilder = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
-                String line = reader.readLine();
-                while (line != null) {
-                    stringBuilder.append(line).append('\n');
-                    line = reader.readLine();
-                }
-            } catch (IOException e) {
-                Toast.makeText(this, "Error occurred reading data from saveData.json",
-                        Toast.LENGTH_SHORT).show();
-            } finally {
-                contents = stringBuilder.toString();
-            }
-        } catch (FileNotFoundException e) {
-            Toast.makeText(this, "File saveData.json not found",
-                    Toast.LENGTH_SHORT).show();
-        }
-        Intent i = new Intent(MainActivity.this, GameActivity.class);
-        i.putExtra("Name", ((EditText) findViewById(R.id.enterName)).getText().toString());
-        i.putExtra("Save", contents);
-        new GetData().execute();
-        i.putExtra("Time", getDataResult);
-        startTime = System.currentTimeMillis();
-        startActivityForResult(i, 0);
+        new GetDataWithSave().execute();
     }
 
     class GetData extends AsyncTask<Void, Integer, Integer> {
@@ -86,6 +54,49 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Integer i) {
             getDataResult = i;
+            startTime = System.currentTimeMillis();
+            Intent intent = new Intent(MainActivity.this, GameActivity.class);
+            intent.putExtra("Time", getDataResult);
+            intent.putExtra("Name", ((EditText) findViewById(R.id.enterName)).getText().toString());
+            startActivityForResult(intent, 0);
+        }
+    }
+
+    class GetDataWithSave extends AsyncTask<Void, Integer, Integer> {
+        protected Integer doInBackground(Void... args) {
+            return databaseConnector.sum();
+        }
+
+        @Override
+        protected void onPostExecute(Integer i) {
+            String contents = "";
+            try {
+                FileInputStream fis = MainActivity.this.openFileInput("saveData.json");
+                InputStreamReader inputStreamReader = new InputStreamReader(fis);
+                StringBuilder stringBuilder = new StringBuilder();
+                try (BufferedReader reader = new BufferedReader(inputStreamReader)) {
+                    String line = reader.readLine();
+                    while (line != null) {
+                        stringBuilder.append(line).append('\n');
+                        line = reader.readLine();
+                    }
+                } catch (IOException e) {
+                    Toast.makeText(MainActivity.this, "Error occurred reading data from saveData.json",
+                            Toast.LENGTH_SHORT).show();
+                } finally {
+                    contents = stringBuilder.toString();
+                }
+            } catch (FileNotFoundException e) {
+                Toast.makeText(MainActivity.this, "File saveData.json not found",
+                        Toast.LENGTH_SHORT).show();
+            }
+            getDataResult = i;
+            Intent intent = new Intent(MainActivity.this, GameActivity.class);
+            intent.putExtra("Name", ((EditText) findViewById(R.id.enterName)).getText().toString());
+            intent.putExtra("Save", contents);
+            intent.putExtra("Time", getDataResult);
+            startTime = System.currentTimeMillis();
+            startActivityForResult(intent, 0);
         }
     }
 

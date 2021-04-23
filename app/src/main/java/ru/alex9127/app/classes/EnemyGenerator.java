@@ -33,8 +33,8 @@ public class EnemyGenerator {
     }
 
     public static Enemy getKingSlime(int level, int enemyX, int enemyY) {
-        return EnemyGenerator.getEnemy("KingSlime", level, 1000, 1000,
-                20, 10, 10, 10, 1000,
+        return EnemyGenerator.getEnemy("KingSlime", level, 300, 200,
+                20, 10, 1, 3, 1000,
                 500, enemyX, enemyY);
     }
 }

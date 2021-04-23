@@ -1,6 +1,8 @@
 package ru.alex9127.app.saving;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 import ru.alex9127.app.classes.Enemy;
 import ru.alex9127.app.classes.Unit;
@@ -21,6 +23,7 @@ public class CompactTerrain {
     public final String type;
     public boolean enemyRewardGotten;
     public Unit unit;
+    public HashSet<Integer> revealedBlocks;
 
     public CompactTerrain(Terrain terrain) {
         this.size = terrain.size;
@@ -37,5 +40,7 @@ public class CompactTerrain {
         this.type = terrain.type;
         this.enemyRewardGotten = terrain.enemyRewardGotten;
         this.unit = terrain.unit;
+        this.revealedBlocks = new HashSet<>();
+        revealedBlocks.addAll(terrain.revealedBlocks);
     }
 }

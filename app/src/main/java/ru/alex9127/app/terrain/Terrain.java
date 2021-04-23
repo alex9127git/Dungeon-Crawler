@@ -2,10 +2,7 @@ package ru.alex9127.app.terrain;
 
 import androidx.annotation.NonNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 import ru.alex9127.app.classes.*;
 
@@ -27,6 +24,7 @@ public class Terrain {
     public int lastPortal;
     public String type;
     public boolean enemyRewardGotten = false;
+    public HashSet<Integer> revealedBlocks = new HashSet<>();
 
     public Terrain(int size, int level, String unitName, int unitHp, int unitAtk, int unitDef,
                    int unitMana, String type) {
@@ -79,6 +77,7 @@ public class Terrain {
         this.type = t.type;
         this.enemyRewardGotten = t.enemyRewardGotten;
         this.unit = t.unit;
+        this.revealedBlocks.addAll(t.revealedBlocks);
         switch (type) {
             case "common":
                 createWalls();
@@ -120,12 +119,15 @@ public class Terrain {
         for (Enemy enemy:enemies) {
             addBlockEntity(enemy.getX(), enemy.getY(), enemy);
         }
+        for (int b : t.revealedBlocks) {
+            revealBlock(b % size, b / size);
+        }
     }
 
     public void generateEnemies() {
         enemies.clear();
         boolean enemyPlaced;
-        for (int i = 0; i < (level % 6 == 0 ? 1 : (int) (level * (10 + Math.random() * 10)));
+        for (int i = 0; i < (type.equals("boss") ? 1 : (int) (level * (10 + Math.random() * 10)));
              i++) {
             enemyPlaced = false;
             do {
@@ -133,7 +135,7 @@ public class Terrain {
                 int enemyY = (int) (Math.random() * 128);
                 if (getBlockWalkable(enemyX, enemyY)) {
                     Enemy e;
-                    if (level % 5 != 0) {
+                    if (type.equals("common")) {
                         if (level < 3) {
                             e = EnemyGenerator.getGreenSlime(level, enemyX, enemyY);
                         } else if (level < 4) {
@@ -212,10 +214,11 @@ public class Terrain {
             case "boss":
                 createWalls();
                 createArena();
-                spawnX = spawnY = size / 4;
+                spawnX = spawnY = size / 8 * 3;
                 portals.add(new Terrain.Point(size / 8 * 5 - 1, size / 8 * 5 - 1));
                 setBlockConfig(spawnX, spawnY, "spawn");
                 setBlockConfig(portals.get(0).getX(), portals.get(0).getY(), "portal0");
+                generateEnemies();
         }
     }
 
@@ -430,6 +433,7 @@ public class Terrain {
 
     public void revealBlock(int x, int y) {
         terrain[y][x].reveal();
+        revealedBlocks.add(y * size + x);
     }
 
     @NonNull
