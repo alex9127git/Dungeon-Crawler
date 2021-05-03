@@ -9,6 +9,8 @@ public class Save {
     public int floor;
     public final CompactDungeon dungeon;
     public String path;
+    public int coinsGotten;
+    public int bossesDefeated;
 
     public Save(GameLogic game) {
         this.unit = game.unit;
@@ -16,5 +18,7 @@ public class Save {
         this.floor = game.floor;
         this.dungeon = new CompactDungeon(game.dungeon);
         this.path = game.path;
+        this.coinsGotten = game.coinsGotten;
+        this.bossesDefeated = game.bossesDefeated;
     }
 }

@@ -9,6 +9,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.DungeonCrawler">
+        <activity android:name=".activities.UpgradeActivity"></activity>
         <activity android:name=".activities.GameActivity" />
         <activity
             android:name=".activities.MainActivity"

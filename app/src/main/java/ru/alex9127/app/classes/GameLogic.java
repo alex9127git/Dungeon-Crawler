@@ -2,7 +2,6 @@ package ru.alex9127.app.classes;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.widget.Toast;
 
 import ru.alex9127.app.saving.Save;
 import ru.alex9127.app.terrain.Dungeon;
@@ -15,11 +14,13 @@ public class GameLogic {
     public final Dungeon dungeon;
     public String path = "";
     public int bossesDefeated = 0;
+    public int coinsGotten = 0;
 
-    public GameLogic(String name) {
+    public GameLogic(String name, double startHp, double startMana) {
         level = 1;
         floor = 1;
-        Terrain terrain = new Terrain(128, level, name, 100, 10, 0, 5, "common");
+        Terrain terrain = new Terrain(128, level, name, (int) (100 + startHp),
+                10, 0,  (int) (5 + startMana), "common");
         unit = terrain.getUnit();
         dungeon = new Dungeon(terrain);
     }
@@ -30,6 +31,8 @@ public class GameLogic {
         unit = save.unit;
         dungeon = new Dungeon(save.dungeon);
         path = save.path;
+        coinsGotten = save.coinsGotten;
+        bossesDefeated = save.bossesDefeated;
     }
 
     public void checkNextLevel() {
@@ -53,6 +56,7 @@ public class GameLogic {
                     }
                     unit = terrain.getUnit();
                     dungeon.addByPath(path, c, terrain);
+                    coinsGotten += 20 * (floor - 1);
                 }
                 path += c;
             }
@@ -76,6 +80,7 @@ public class GameLogic {
         if (!unit.alive()) {
             Intent i = new Intent();
             i.putExtra("Result", "Lost");
+            i.putExtra("Coins gotten", coinsGotten);
             a.setResult(Activity.RESULT_OK, i);
             a.finish();
         }
@@ -97,10 +102,14 @@ public class GameLogic {
         if (getTerrain().enemies.isEmpty() && !getTerrain().enemyRewardGotten) {
             getTerrain().setBlockConfig(unit.getX(), unit.getY(), "chest");
             getTerrain().enemyRewardGotten = true;
-            if (getTerrain().type.equals("boss")) bossesDefeated++;
+            if (getTerrain().type.equals("boss")) {
+                bossesDefeated++;
+                coinsGotten += 100 * bossesDefeated;
+            }
             if (bossesDefeated > 2) {
                 Intent i = new Intent();
                 i.putExtra("Result", "Won");
+                i.putExtra("Coins gotten", coinsGotten);
                 a.setResult(Activity.RESULT_OK, i);
                 a.finish();
             }

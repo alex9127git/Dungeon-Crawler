@@ -5,4 +5,14 @@
     <string name="leaderBoards">Leaderboards</string>
     <string name="quitBtn">Quit</string>
     <string name="enter_name_hint">Enter your name here</string>
+    <string name="upgradeBtn">Upgrade</string>
+    <string name="backBtn">Back</string>
+    <string name="attackPowerTv">Attack power</string>
+    <string name="defensePowerTv">Defense power</string>
+    <string name="startHpTv">Start HP</string>
+    <string name="startManaTv">Start mana</string>
+    <string name="coins">Coins: %1$d</string>
+    <string name="cost">Cost: %1$d</string>
+    <string name="percentageEffect">Effect: +%1$d%% %2$s</string>
+    <string name="flatEffect">Effect: +%1$d %2$s</string>
 </resources>

@@ -63,6 +63,16 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="@string/upgradeBtn"
+        android:textSize="24sp"
+        android:backgroundTint="@color/red"
+        android:layout_gravity="center"
+        android:textColor="@color/black"
+        android:onClick="upgrade"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:text="@string/quitBtn"
         android:textSize="24sp"
         android:backgroundTint="@color/red"

@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.*;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.*;
 import java.io.*;
@@ -31,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void quit(View v) {
-        this.finish();
+        finish();
         System.exit(0);
     }
 
@@ -48,11 +47,23 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(this, "Game over",
                             Toast.LENGTH_LONG).show();
             }
-        } else new SaveData().execute();
+            SharedPreferences p = getSharedPreferences("preferences.xml",
+                    Context.MODE_PRIVATE);
+            SharedPreferences.Editor e = p.edit();
+            e.putInt("Coins", p.getInt("Coins", 0) +
+                    data.getIntExtra("Coins gotten", 0));
+            e.apply();
+        }
+        new SaveData().execute();
     }
 
     public void continueExisting(View view) {
         new GetDataWithSave().execute();
+    }
+
+    public void upgrade(View view) {
+        Intent i = new Intent(this, UpgradeActivity.class);
+        startActivity(i);
     }
 
     class GetData extends AsyncTask<Void, Integer, Integer> {
@@ -99,13 +110,15 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "File saveData.json not found",
                         Toast.LENGTH_SHORT).show();
             }
-            getDataResult = i;
-            Intent intent = new Intent(MainActivity.this, GameActivity.class);
-            intent.putExtra("Name", ((EditText) findViewById(R.id.enterName)).getText().toString());
-            intent.putExtra("Save", contents);
-            intent.putExtra("Time", getDataResult);
-            startTime = System.currentTimeMillis();
-            startActivityForResult(intent, 0);
+            if (!contents.equals("")) {
+                getDataResult = i;
+                Intent intent = new Intent(MainActivity.this, GameActivity.class);
+                intent.putExtra("Name", ((EditText) findViewById(R.id.enterName)).getText().toString());
+                intent.putExtra("Save", contents);
+                intent.putExtra("Time", getDataResult);
+                startTime = System.currentTimeMillis();
+                startActivityForResult(intent, 0);
+            }
         }
     }
 

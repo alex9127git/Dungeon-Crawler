@@ -3,6 +3,7 @@ package ru.alex9127.app.drawing;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.*;
 import android.view.*;
 import androidx.annotation.NonNull;
@@ -22,17 +23,22 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
     private int xStart, yStart, yBlocks;
     public DrawThread drawer;
     private final Activity a;
-    public double dmgPlus;
+    public double dmgPlus, atkUpgradeMult, defUpgradeMult, startHp, startMana;
 
     public DrawSurface(Context context, String name, Save save, int time) {
         super(context);
+        a = (Activity) context;
+        dmgPlus = time / 30000000.0;
+        SharedPreferences p = a.getSharedPreferences("preferences.xml", Context.MODE_PRIVATE);
+        atkUpgradeMult = 1 + p.getInt("Attack power level", 0) * 0.01;
+        defUpgradeMult = 1 + p.getInt("Defense power level", 0) * 0.01;
+        startHp = p.getInt("Start HP level", 0) * 10;
+        startMana = p.getInt("Start mana level", 0);
         if (save != null) {
             game = new GameLogic(save);
         } else {
-            game = new GameLogic(name);
+            game = new GameLogic(name, startHp, startMana);
         }
-        a = (Activity) context;
-        dmgPlus = time / 30000000.0;
         getHolder().addCallback(this);
     }
 
@@ -173,7 +179,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                 game.unit.changeMana(-1);
                 for (Enemy e : game.getTerrain().getEnemies()) {
                     if (Pathfinder.distance(e.getX(), e.getY(), blockX, blockY) < 2)
-                        e.changeHp(-1 * (game.unit.getAttackPower() - e.getDefensePower()) * 3);
+                        e.changeHp(-1 * (game.unit.getAttackPower() - e.getDefensePower()));
                 }
                 drawer.dmg = game.enemyAI();
             }
@@ -300,8 +306,13 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                         } else {
                             canvas.drawColor(getResources().getColor(R.color.darkGray));
                             buttonPause.draw(canvas);
-                            drawCompoundText(game.unit.stats() + "\nYou also get +" + (int) (dmgPlus * 100) + "% to attack power\nbased on your time playing this game", buttonPause.getBoundaryRect().left,
-                                    buttonPause.getBoundaryRect().bottom + unitOfLength, white, canvas);
+                            drawCompoundText(game.unit.stats() + "\nYou also get +" +
+                                            (int) (dmgPlus * 100) + "% to attack power\nbased on" +
+                                            " your time playing this game\nYou will get " +
+                                            game.coinsGotten + " coins\nby the end of this round",
+                                    buttonPause.getBoundaryRect().left,
+                                    buttonPause.getBoundaryRect().bottom + unitOfLength, white,
+                                    canvas);
                         }
                     } finally {
                         surfaceHolder.unlockCanvasAndPost(canvas);
@@ -315,7 +326,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                 isAttackMiniGame = false;
                 attackCoins.clear();
                 for (Enemy e : drawer.attackedEnemies) {
-                    int atk = (int) ((game.unit.getAttackPower() - e.getDefensePower()) * atkMultiplier * (1 + dmgPlus));
+                    int atk = (int) ((game.unit.getAttackPower() * atkMultiplier * (1 + dmgPlus) * atkUpgradeMult - e.getDefensePower()));
                     e.changeHp(-atk);
                     text.rewind();
                     TextImage t = text.clone();
@@ -330,7 +341,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
             if (defenseMiniGameTime > 5000) {
                 isDefenseMiniGame = false;
                 defenseCoins.clear();
-                game.unit.changeHp((int) (dmg * dmgMultiplier));
+                game.unit.changeHp((int) (dmg * dmgMultiplier / defUpgradeMult));
                 dmg = 0;
             }
         }
@@ -458,6 +469,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                 game.unit.addXp(e.getXpReward());
                 game.getTerrain().getEnemies().remove(e);
                 game.getTerrain().removeBlockEntity(x, y, e);
+                game.coinsGotten += game.floor * (game.bossesDefeated + 1);
                 text.rewind();
                 TextImage t = text.clone();
                 t.setText("+" + e.getXpReward() + " XP");

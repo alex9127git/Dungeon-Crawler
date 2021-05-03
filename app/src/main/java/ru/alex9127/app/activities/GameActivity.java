@@ -3,7 +3,6 @@ package ru.alex9127.app.activities;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.*;
-import android.util.Log;
 import android.view.*;
 import android.widget.*;
 
@@ -66,7 +65,6 @@ public class GameActivity extends AppCompatActivity implements View.OnTouchListe
                     Toast.LENGTH_SHORT).show();
         }
         new MainActivity.SaveData().execute();
-        Log.v("LOG", String.valueOf(MainActivity.databaseConnector.sum()));
     }
 }
 
