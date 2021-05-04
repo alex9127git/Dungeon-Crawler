@@ -8,6 +8,7 @@ import android.graphics.*;
 import android.view.*;
 import androidx.annotation.NonNull;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 
@@ -28,7 +29,7 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
     public DrawSurface(Context context, String name, Save save, int time) {
         super(context);
         a = (Activity) context;
-        dmgPlus = time / 30000000.0;
+        dmgPlus = time / 30000.0;
         SharedPreferences p = a.getSharedPreferences("preferences.xml", Context.MODE_PRIVATE);
         atkUpgradeMult = 1 + p.getInt("Attack power level", 0) * 0.01;
         defUpgradeMult = 1 + p.getInt("Defense power level", 0) * 0.01;
@@ -388,7 +389,24 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                 seconds++;
                 if (seconds % 3 == 0 && game.unit.getManaPercentage() < 1)
                     game.unit.changeMana(1);
-                if (seconds % 5 == 0 && textImages.size() >= 3) textImages.clear();
+                if (seconds % 5 == 0 && textImages.size() >= 3) {
+                    textImages.clear();
+                    ArrayList<Enemy> dead = new ArrayList<>();
+                    for (Enemy e:game.getTerrain().getEnemies()) {
+                        if (!e.alive()) {
+                            dead.add(e);
+                            game.unit.addXp(e.getXpReward());
+                            game.getTerrain().getEnemies().remove(e);
+                            game.getTerrain().removeBlockEntity(e.getX(), e.getY(), e);
+                            game.coinsGotten += game.floor * (game.bossesDefeated + 1);
+                            text.rewind();
+                            TextImage t = text.clone();
+                            t.setText("+" + e.getXpReward() + " XP");
+                            textImages.add(t);
+                        }
+                    }
+                    game.getTerrain().enemies.removeAll(dead);
+                }
             }
             if (dmg < 0 && !isDefenseMiniGame) {
                 isDefenseMiniGame = true;

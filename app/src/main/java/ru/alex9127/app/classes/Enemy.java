@@ -1,5 +1,7 @@
 package ru.alex9127.app.classes;
 
+import android.util.Log;
+
 import ru.alex9127.app.terrain.Terrain;
 
 public class Enemy extends Entity {
@@ -13,6 +15,21 @@ public class Enemy extends Entity {
     public void decide(Unit unit, Terrain terrain) {
         if (alive()) {
             if (distanceTo(unit) < 10) {
+                if (getName().equals("KingSlime")) {
+                    int random = (int) (Math.random() * 10);
+                    Log.v("LOG", String.valueOf(random));
+                    if ((int) (Math.random() * 10) == 9) {
+                        for (int i = 0; i < 3; i++) {
+                            int x = getX() + (int) (Math.random() * 20 - 10);
+                            int y = getY() + (int) (Math.random() * 20 - 10);
+                            if (terrain.getBlockWalkable(x, y)) {
+                                Enemy e = EnemyGenerator.getGreenSlime(terrain.level, x, y);
+                                terrain.addBlockEntity(x, y, e);
+                                terrain.enemies.add(e);
+                            }
+                        }
+                    }
+                }
                 int[][] path = Pathfinder.findPath(terrain, this, unit);
                 terrain.removeBlockEntity(getX(), getY(), this);
                 if (path.length > 1 && (int) (Math.random() * 10) < 9) {

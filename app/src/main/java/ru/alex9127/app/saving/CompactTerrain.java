@@ -3,6 +3,7 @@ package ru.alex9127.app.saving;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import ru.alex9127.app.classes.Enemy;
 import ru.alex9127.app.classes.Unit;
@@ -17,7 +18,7 @@ public class CompactTerrain {
     public final ArrayList<Terrain.Point> portals;
     public final ArrayList<Terrain.Point> chests;
     public final Terrain.Trap[] traps;
-    public final ArrayList<Enemy> enemies;
+    public final CopyOnWriteArrayList<Enemy> enemies;
     public final int level;
     public int lastPortal;
     public final String type;

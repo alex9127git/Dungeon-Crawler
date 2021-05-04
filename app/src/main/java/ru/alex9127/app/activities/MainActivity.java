@@ -124,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static class SaveData extends AsyncTask<Void, Integer, Void> {
         protected Void doInBackground(Void... args) {
-            databaseConnector.insert((int) (System.currentTimeMillis() - startTime));
+            databaseConnector.insert((int) ((System.currentTimeMillis() - startTime) / 1000));
             return null;
         }
     }

@@ -99,13 +99,16 @@ public class GameLogic {
     }
 
     public void checkAllEnemiesKilled(Activity a) {
-        if (getTerrain().enemies.isEmpty() && !getTerrain().enemyRewardGotten) {
+        if (getTerrain().type.equals("common") && getTerrain().enemies.isEmpty() && !getTerrain().enemyRewardGotten) {
             getTerrain().setBlockConfig(unit.getX(), unit.getY(), "chest");
             getTerrain().enemyRewardGotten = true;
-            if (getTerrain().type.equals("boss")) {
-                bossesDefeated++;
-                coinsGotten += 100 * bossesDefeated;
-            }
+        }
+        if (getTerrain().type.equals("boss") && !getTerrain().hasBoss() && !getTerrain().enemyRewardGotten) {
+            getTerrain().setBlockConfig(unit.getX(), unit.getY(), "chest");
+            getTerrain().enemyRewardGotten = true;
+            getTerrain().enemies.clear();
+            bossesDefeated++;
+            coinsGotten += 100 * bossesDefeated;
             if (bossesDefeated > 2) {
                 Intent i = new Intent();
                 i.putExtra("Result", "Won");

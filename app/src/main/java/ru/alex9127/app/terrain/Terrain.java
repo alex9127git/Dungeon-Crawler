@@ -3,6 +3,7 @@ package ru.alex9127.app.terrain;
 import androidx.annotation.NonNull;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import ru.alex9127.app.classes.*;
 
@@ -18,7 +19,7 @@ public class Terrain {
     public ArrayList<Point> portals = new ArrayList<>();
     public ArrayList<Point> chests = new ArrayList<>();
     public Trap[] traps;
-    public ArrayList<Enemy> enemies = new ArrayList<>();
+    public CopyOnWriteArrayList<Enemy> enemies = new CopyOnWriteArrayList<>();
     public Unit unit;
     public int level;
     public int lastPortal;
@@ -453,7 +454,7 @@ public class Terrain {
         return size;
     }
 
-    public ArrayList<Enemy> getEnemies() {
+    public CopyOnWriteArrayList<Enemy> getEnemies() {
         return enemies;
     }
 
@@ -501,5 +502,14 @@ public class Terrain {
                 enemies.equals(terrain1.enemies) &&
                 type.equals(terrain1.type) &&
                 Arrays.deepEquals(terrain, terrain1.terrain);
+    }
+
+    public boolean hasBoss() {
+        for (Enemy e:enemies) {
+            if (e.getName().equals("KingSlime")) {
+                return true;
+            }
+        }
+        return false;
     }
 }
