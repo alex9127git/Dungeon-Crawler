@@ -17,3 +17,7 @@
 Этот проект будет дорабатываться и после окончания моего обучения в IT школе SAMSUNG. У меня на него есть большие планы, и я планирую сделать из него нечто большее, затем выложить игру в **Play Маркет** и зарабатывать с этой игры.
 
 [APK-файл](https://1drv.ms/u/s!AuDz8eE7kPd24zjwub1PxxVcSkyl?e=kbtvr2)
+
+[Презентация](https://1drv.ms/p/s!AuDz8eE7kPd24z9XFC0ipuSmL7Vu?e=IiXk5H)
+
+[Видео](https://1drv.ms/v/s!AuDz8eE7kPd240WB-8psd0QKOtt1?e=N4uShk)
