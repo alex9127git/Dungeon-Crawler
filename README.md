@@ -20,4 +20,6 @@
 
 [Презентация](https://1drv.ms/p/s!AuDz8eE7kPd24z9XFC0ipuSmL7Vu?e=IiXk5H)
 
-[Видео](https://1drv.ms/v/s!AuDz8eE7kPd240WB-8psd0QKOtt1?e=N4uShk)
+[Видео (3 минуты)](https://1drv.ms/v/s!AuDz8eE7kPd240WB-8psd0QKOtt1?e=N4uShk)
+
+[Видео (2 минуты)]()
