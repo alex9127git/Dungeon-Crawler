@@ -22,4 +22,4 @@
 
 [Видео (3 минуты)](https://1drv.ms/v/s!AuDz8eE7kPd240WB-8psd0QKOtt1?e=N4uShk)
 
-[Видео (2 минуты)]()
+[Видео (2 минуты)](https://1drv.ms/v/s!AuDz8eE7kPd240uQ0pEaAI-LGcOf?e=xVPu9U)
