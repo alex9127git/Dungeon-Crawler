@@ -62,13 +62,17 @@ public class Unit extends Entity {
             String config = terrain.getBlockConfig(this.getX() + dx, this.getY() + dy);
             move(dx, dy);
             if (config.equals("chest")) {
-                int r = (int) (Math.random() * 2);
-                if (r == 0) {
-                    upgradeAtk((int) (3 + (int) (Math.random() * 3) * (1 + (level * 0.2))));
-                    return "atk";
-                } else if (r == 1) {
-                    upgradeDef((int) (1 + (int) (Math.random() * 3) * (1 + (level * 0.2))));
-                    return "def";
+                int r = (int) (Math.random() * 3);
+                switch (r) {
+                    case 0:
+                        upgradeAtk((int) (3 + (int) (Math.random() * 3) * (1 + (level * 0.2))));
+                        return "atk";
+                    case 1:
+                        upgradeDef((int) (1 + (int) (Math.random() * 3) * (1 + (level * 0.2))));
+                        return "def";
+                    case 2:
+                        changeHp((int) (this.getMaxHp() / 2));
+                        return "heal";
                 }
             }
             if (config.equals("spikes")) {

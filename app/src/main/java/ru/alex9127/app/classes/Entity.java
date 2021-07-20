@@ -44,12 +44,17 @@ public abstract class Entity extends Thing {
         return (double) mana / maxMana;
     }
 
+    public int getMaxHp() {
+        return maxHp;
+    }
+
     public boolean alive() {
         return hp > 0;
     }
 
     public void changeHp(int diff) {
         hp += diff;
+        if (hp > maxHp) hp = maxHp;
     }
 
     public void changeMana(int diff) {

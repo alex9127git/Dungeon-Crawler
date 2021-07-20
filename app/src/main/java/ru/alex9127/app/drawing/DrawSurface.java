@@ -137,10 +137,16 @@ public class DrawSurface extends SurfaceView implements SurfaceHolder.Callback {
                     if (game.getTerrain().getBlockConfig(game.unit.getX(), game.unit.getY()).equals("chest")) {
                         game.getTerrain().setBlockConfig(game.unit.getX(), game.unit.getY(), "none");
                         String str = "";
-                        if (s.equals("atk")) {
-                            str = "Found better weapon";
-                        } else if (s.equals("def")) {
-                            str = "Found better armor";
+                        switch (s) {
+                            case "atk":
+                                str = "Found better weapon, ATK power up";
+                                break;
+                            case "def":
+                                str = "Found better armor, DEF power up";
+                                break;
+                            case "heal":
+                                str = "Found healing potion, restored 50% HP";
+                                break;
                         }
                         text.rewind();
                         TextImage t = text.clone();
